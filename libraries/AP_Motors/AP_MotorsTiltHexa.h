@@ -67,6 +67,7 @@ protected:
     float               _pitch_factor[AP_MOTORS_MAX_NUM_MOTORS]; // each motors contribution to pitch
     //float               _yaw_factor[AP_MOTORS_MAX_NUM_MOTORS];  // each motors contribution to yaw (normally 1 or -1)
 
+    SRV_Channel		*_motor_servo[AP_MOTORS_MAX_NUM_MOTORS];
     SRV_Channel     *_yaw_servo1; // yaw output channel
     SRV_Channel     *_yaw_servo2; // yaw output channel
     float           _pivot_angle;                       // Angle of yaw pivot
@@ -82,7 +83,7 @@ protected:
 
 private:
     void ConfigureMotorFactors(int MotorNumber, float angle_degrees);
-    int16_t             InvertPWM(int16_t PWM);
+    int16_t             ReversePWMIfRequired(int16_t PWM, SRV_Channel *pServo);
 };
 
 

@@ -35,6 +35,13 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     motor_enabled[AP_MOTORS_MOT_5] = true;
     motor_enabled[AP_MOTORS_MOT_6] = true;
 
+    _motor_servo[AP_MOTORS_MOT_1] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_2] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_3] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_4] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+
     // find the yaw servo
     _yaw_servo1 = SRV_Channels::get_channel_for(SRV_Channel::k_motor7, AP_MOTORS_YAW_1);
     _yaw_servo2 = SRV_Channels::get_channel_for(SRV_Channel::k_motor8, AP_MOTORS_YAW_2);
@@ -131,21 +138,28 @@ void AP_MotorsTiltHexa::output_to_motors()
         case THROTTLE_UNLIMITED:
         case SPOOL_DOWN:
             // set motor output based on thrust requests
-            rc_write(AP_MOTORS_MOT_1, InvertPWM(calc_thrust_to_pwm(_thrust[0])));
-            rc_write(AP_MOTORS_MOT_2, InvertPWM(calc_thrust_to_pwm(_thrust[1])));
-            rc_write(AP_MOTORS_MOT_3, InvertPWM(calc_thrust_to_pwm(_thrust[2])));
-            rc_write(AP_MOTORS_MOT_4, InvertPWM(calc_thrust_to_pwm(_thrust[3])));
-            rc_write(AP_MOTORS_MOT_5, InvertPWM(calc_thrust_to_pwm(_thrust[4])));
-            rc_write(AP_MOTORS_MOT_6, InvertPWM(calc_thrust_to_pwm(_thrust[5])));
+            rc_write(AP_MOTORS_MOT_1, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[0]), _motor_servo[AP_MOTORS_MOT_1]));
+            rc_write(AP_MOTORS_MOT_2, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[1]), _motor_servo[AP_MOTORS_MOT_2]));
+            rc_write(AP_MOTORS_MOT_3, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[2]), _motor_servo[AP_MOTORS_MOT_3]));
+            rc_write(AP_MOTORS_MOT_4, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[3]), _motor_servo[AP_MOTORS_MOT_4]));
+            rc_write(AP_MOTORS_MOT_5, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[4]), _motor_servo[AP_MOTORS_MOT_5]));
+            rc_write(AP_MOTORS_MOT_6, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[5]), _motor_servo[AP_MOTORS_MOT_6]));
             rc_write(AP_MOTORS_YAW_1, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo1));
             rc_write(AP_MOTORS_YAW_2, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo2));
             break;
     }
 }
 
-int16_t AP_MotorsTiltHexa::InvertPWM(int16_t PWM)
+int16_t AP_MotorsTiltHexa::ReversePWMIfRequired(int16_t PWM, SRV_Channel *pServo)
 {
-    return (3000 - PWM);
+	if (pServo->get_reversed())
+	{
+		return (3000 - PWM);
+	}
+	else
+	{
+		return PWM;
+	}
     //return get_pwm_output_min() + (get_pwm_output_max()-get_pwm_output_min()) * (_spin_min + (_spin_max-_spin_min)*apply_thrust_curve_and_volt_scaling(thrust_in));
 }
 
