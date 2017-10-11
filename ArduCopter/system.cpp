@@ -454,6 +454,7 @@ uint8_t Copter::get_frame_mav_type()
             return MAV_TYPE_QUADROTOR;
         case AP_Motors::MOTOR_FRAME_HEXA:
         case AP_Motors::MOTOR_FRAME_Y6:
+        case AP_Motors::MOTOR_FRAME_TILTHEXA:
             return MAV_TYPE_HEXAROTOR;
         case AP_Motors::MOTOR_FRAME_OCTA:
         case AP_Motors::MOTOR_FRAME_OCTAQUAD:
@@ -505,6 +506,8 @@ const char* Copter::get_frame_string()
             return "TAILSITTER";
         case AP_Motors::MOTOR_FRAME_DODECAHEXA:
             return "DODECA_HEXA";
+        case AP_Motors::MOTOR_FRAME_TILTHEXA:
+        	return "TILTHEXA";
         case AP_Motors::MOTOR_FRAME_UNDEFINED:
         default:
             return "UNKNOWN";
@@ -544,6 +547,10 @@ void Copter::allocate_motors(void)
         case AP_Motors::MOTOR_FRAME_TAILSITTER:
             motors = new AP_MotorsTailsitter(copter.scheduler.get_loop_rate_hz());
             motors_var_info = AP_MotorsTailsitter::var_info;
+            break;
+        case AP_Motors::MOTOR_FRAME_TILTHEXA:
+            motors = new AP_MotorsTiltHexa(copter.scheduler.get_loop_rate_hz());
+            motors_var_info = AP_MotorsTiltHexa::var_info;
             break;
 #else // FRAME_CONFIG == HELI_FRAME
         case AP_Motors::MOTOR_FRAME_HELI_DUAL:

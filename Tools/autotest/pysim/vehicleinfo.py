@@ -34,6 +34,12 @@ class VehicleInfo(object):
                 "default_params_filename": ["default_params/copter.parm",
                                             "default_params/copter-hexa.parm" ],
             },
+            "tilthexa": {
+                "make_target": "sitl",
+                "waf_target": "bin/arducopter",
+                "default_params_filename": ["default_params/copter.parm",
+                                            "default_params/copter-hexa.parm" ],
+            },
             "octa-quad": {
                 "make_target": "sitl",
                 "waf_target": "bin/arducopter",

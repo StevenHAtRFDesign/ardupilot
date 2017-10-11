@@ -128,6 +128,16 @@ static Motor tilttri_vectored_motors[] =
     Motor(AP_MOTORS_MOT_4,  180, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 2)
 };
 
+static Motor tilthexa_motors[] =
+{
+    Motor(AP_MOTORS_MOT_1,    0, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1, AP_MOTORS_MOT_7, -15, 15, -1, 0, 0),
+    Motor(AP_MOTORS_MOT_2,  180, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 4, AP_MOTORS_MOT_7, 15, -15, -1, 0, 0),
+    Motor(AP_MOTORS_MOT_3, -120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  5, AP_MOTORS_MOT_7, 7.5, -7.5, AP_MOTORS_MOT_7, 13, -13),
+    Motor(AP_MOTORS_MOT_4,   60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 2, AP_MOTORS_MOT_7, -7.5, 7.5, AP_MOTORS_MOT_7, -13, 13),
+    Motor(AP_MOTORS_MOT_5,  -60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 6, AP_MOTORS_MOT_7, -7.5, 7.5, AP_MOTORS_MOT_7, 13, -13),
+    Motor(AP_MOTORS_MOT_6,  120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  3, AP_MOTORS_MOT_7, 7.5, -7.5, AP_MOTORS_MOT_7, -13, 13),
+};
+
 static Motor y6_motors[] =
 {
     Motor(AP_MOTORS_MOT_1,  60, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 2),
@@ -171,7 +181,8 @@ static Frame supported_frames[] =
     Frame("tilttrivec",3, tilttri_vectored_motors),
     Frame("tilttri",   3, tilttri_motors),
     Frame("y6",        6, y6_motors),
-    Frame("firefly",   6, firefly_motors)
+    Frame("firefly",   6, firefly_motors),
+	Frame("tilthexa",   6, tilthexa_motors),
 };
 
 void Frame::init(float _mass, float hover_throttle, float _terminal_velocity, float _terminal_rotation_rate)

@@ -109,6 +109,7 @@ static const struct {
     { "plane",              Plane::create },
     { "calibration",        Calibration::create },
     { "vectored",           Submarine::create },
+	{ "tilthexa",           MultiCopter::create },
 };
 
 void SITL_State::_set_signal_handlers(void) const
