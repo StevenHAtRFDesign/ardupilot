@@ -5,6 +5,7 @@
  *      Author: snh
  */
 
+#include <stdio.h>
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Math/AP_Math.h>
 #include <GCS_MAVLink/GCS.h>
@@ -17,6 +18,8 @@ extern const AP_HAL::HAL& hal;
 // init
 void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type frame_type)
 {
+	printf("\nInit tilthexa!\n");
+
     add_motor_num(AP_MOTORS_MOT_1);
     add_motor_num(AP_MOTORS_MOT_2);
     add_motor_num(AP_MOTORS_MOT_3);
@@ -146,6 +149,7 @@ void AP_MotorsTiltHexa::output_to_motors()
             rc_write(AP_MOTORS_MOT_6, ReversePWMIfRequired(calc_thrust_to_pwm(_thrust[5]), _motor_servo[AP_MOTORS_MOT_6]));
             rc_write(AP_MOTORS_YAW_1, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo1));
             rc_write(AP_MOTORS_YAW_2, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo2));
+            //printf("_pivot_angle = %f\n", _pivot_angle);
             break;
     }
 }
