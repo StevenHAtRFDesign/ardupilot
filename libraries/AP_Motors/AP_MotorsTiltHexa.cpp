@@ -39,11 +39,11 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     motor_enabled[AP_MOTORS_MOT_6] = true;
 
     _motor_servo[AP_MOTORS_MOT_1] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
-    _motor_servo[AP_MOTORS_MOT_2] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
-    _motor_servo[AP_MOTORS_MOT_3] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
-    _motor_servo[AP_MOTORS_MOT_4] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
-    _motor_servo[AP_MOTORS_MOT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
-    _motor_servo[AP_MOTORS_MOT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor1, AP_MOTORS_MOT_1);
+    _motor_servo[AP_MOTORS_MOT_2] = SRV_Channels::get_channel_for(SRV_Channel::k_motor2, AP_MOTORS_MOT_2);
+    _motor_servo[AP_MOTORS_MOT_3] = SRV_Channels::get_channel_for(SRV_Channel::k_motor3, AP_MOTORS_MOT_3);
+    _motor_servo[AP_MOTORS_MOT_4] = SRV_Channels::get_channel_for(SRV_Channel::k_motor4, AP_MOTORS_MOT_4);
+    _motor_servo[AP_MOTORS_MOT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor5, AP_MOTORS_MOT_5);
+    _motor_servo[AP_MOTORS_MOT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor6, AP_MOTORS_MOT_6);
 
     // find the yaw servo
     _yaw_servo1 = SRV_Channels::get_channel_for(SRV_Channel::k_motor7, AP_MOTORS_YAW_1);
