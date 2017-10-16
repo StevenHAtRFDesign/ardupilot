@@ -83,7 +83,7 @@ protected:
 
 private:
     void ConfigureMotorFactors(int MotorNumber, float angle_degrees);
-    int16_t             ReversePWMIfRequired(int16_t PWM, SRV_Channel *pServo);
+    float             ReverseThrustIfRequired(float Thrust, SRV_Channel *pServo);
 };
 
 
