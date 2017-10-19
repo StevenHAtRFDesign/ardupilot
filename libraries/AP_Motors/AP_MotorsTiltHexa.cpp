@@ -11,8 +11,6 @@
 #include <GCS_MAVLink/GCS.h>
 #include "AP_MotorsTiltHexa.h"
 
-#define TILT_HEXA_QTY_MOTORS 6
-
 extern const AP_HAL::HAL& hal;
 
 // init
@@ -45,18 +43,30 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     _motor_servo[AP_MOTORS_MOT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor5, AP_MOTORS_MOT_5);
     _motor_servo[AP_MOTORS_MOT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor6, AP_MOTORS_MOT_6);
 
-    // find the yaw servo
-    _yaw_servo1 = SRV_Channels::get_channel_for(SRV_Channel::k_motor7, AP_MOTORS_YAW_1);
-    _yaw_servo2 = SRV_Channels::get_channel_for(SRV_Channel::k_motor8, AP_MOTORS_YAW_2);
-    if (!_yaw_servo1 || !_yaw_servo2) {
-        gcs().send_text(MAV_SEVERITY_ERROR, "MotorsTri: unable to setup yaw channel");
-        // don't set initialised_ok
-        return;
+    // find the tilt servos
+    _tilt_servo[AP_MOTORS_TILT_1] = SRV_Channels::get_channel_for(SRV_Channel::k_motor7, AP_MOTORS_TILT_1);
+    _tilt_servo[AP_MOTORS_TILT_2] = SRV_Channels::get_channel_for(SRV_Channel::k_motor8, AP_MOTORS_TILT_2);
+    _tilt_servo[AP_MOTORS_TILT_3] = SRV_Channels::get_channel_for(SRV_Channel::k_motor9, AP_MOTORS_TILT_3);
+    _tilt_servo[AP_MOTORS_TILT_4] = SRV_Channels::get_channel_for(SRV_Channel::k_motor10, AP_MOTORS_TILT_4);
+    _tilt_servo[AP_MOTORS_TILT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor11, AP_MOTORS_TILT_5);
+    _tilt_servo[AP_MOTORS_TILT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor12, AP_MOTORS_TILT_6);
+    for (int n = AP_MOTORS_TILT_1; n <= AP_MOTORS_TILT_6; n++)
+    {
+    	if (_tilt_servo[n] == NULL)
+    	{
+    		gcs().send_text(MAV_SEVERITY_ERROR, "MotorsTiltHexa: unable to setup tilt channel");
+    		// don't set initialised_ok
+    		return;
+    	}
     }
 
     // allow mapping for yaw
-    add_motor_num(AP_MOTORS_YAW_1);
-    add_motor_num(AP_MOTORS_YAW_2);
+    add_motor_num(AP_MOTORS_TILT_1);
+    add_motor_num(AP_MOTORS_TILT_2);
+    add_motor_num(AP_MOTORS_TILT_3);
+    add_motor_num(AP_MOTORS_TILT_4);
+    add_motor_num(AP_MOTORS_TILT_5);
+    add_motor_num(AP_MOTORS_TILT_6);
 
     ConfigureMotorFactors(AP_MOTORS_MOT_1, 0);
     ConfigureMotorFactors(AP_MOTORS_MOT_2, 180);
@@ -64,6 +74,13 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     ConfigureMotorFactors(AP_MOTORS_MOT_4, 60);
     ConfigureMotorFactors(AP_MOTORS_MOT_5, -60);
     ConfigureMotorFactors(AP_MOTORS_MOT_6, 120);
+
+    ConfigureTiltFactors(AP_MOTORS_TILT_1, 0);
+    ConfigureTiltFactors(AP_MOTORS_TILT_2, 180);
+    ConfigureTiltFactors(AP_MOTORS_TILT_3, -120);
+    ConfigureTiltFactors(AP_MOTORS_TILT_4, 60);
+    ConfigureTiltFactors(AP_MOTORS_TILT_5, -60);
+    ConfigureTiltFactors(AP_MOTORS_TILT_6, 120);
 
     // record successful initialisation if what we setup was the desired frame_class
     _flags.initialised_ok = (frame_class == MOTOR_FRAME_TILTHEXA);
@@ -73,6 +90,12 @@ void AP_MotorsTiltHexa::ConfigureMotorFactors(int MotorNumber, float angle_degre
 {
 	_roll_factor[MotorNumber] = cosf(radians(angle_degrees + 90));
 	_pitch_factor[MotorNumber] = cosf(radians(angle_degrees));
+}
+
+void AP_MotorsTiltHexa::ConfigureTiltFactors(int MotorNumber, float angle_degrees)
+{
+	_forward_factor[MotorNumber] = -sinf(radians(angle_degrees));
+	_lateral_factor[MotorNumber] = cosf(radians(angle_degrees));
 }
 
 // set frame class (i.e. quad, hexa, heli) and type (i.e. x, plus)
@@ -108,8 +131,12 @@ void AP_MotorsTiltHexa::enable()
     rc_enable_ch(AP_MOTORS_MOT_4);
     rc_enable_ch(AP_MOTORS_MOT_5);
     rc_enable_ch(AP_MOTORS_MOT_6);
-    rc_enable_ch(AP_MOTORS_YAW_1);
-    rc_enable_ch(AP_MOTORS_YAW_2);
+    rc_enable_ch(AP_MOTORS_TILT_1);
+    rc_enable_ch(AP_MOTORS_TILT_2);
+    rc_enable_ch(AP_MOTORS_TILT_3);
+    rc_enable_ch(AP_MOTORS_TILT_4);
+    rc_enable_ch(AP_MOTORS_TILT_5);
+    rc_enable_ch(AP_MOTORS_TILT_6);
 }
 
 void AP_MotorsTiltHexa::output_to_motors()
@@ -123,8 +150,12 @@ void AP_MotorsTiltHexa::output_to_motors()
             rc_write(AP_MOTORS_MOT_4, get_pwm_output_min());
             rc_write(AP_MOTORS_MOT_5, get_pwm_output_min());
             rc_write(AP_MOTORS_MOT_6, get_pwm_output_min());
-            rc_write(AP_MOTORS_YAW_1, _yaw_servo1->get_trim());
-            rc_write(AP_MOTORS_YAW_2, _yaw_servo2->get_trim());
+            rc_write(AP_MOTORS_TILT_1, _tilt_servo[AP_MOTORS_TILT_1]->get_trim());
+            rc_write(AP_MOTORS_TILT_2, _tilt_servo[AP_MOTORS_TILT_2]->get_trim());
+            rc_write(AP_MOTORS_TILT_3, _tilt_servo[AP_MOTORS_TILT_3]->get_trim());
+            rc_write(AP_MOTORS_TILT_4, _tilt_servo[AP_MOTORS_TILT_4]->get_trim());
+            rc_write(AP_MOTORS_TILT_5, _tilt_servo[AP_MOTORS_TILT_5]->get_trim());
+            rc_write(AP_MOTORS_TILT_6, _tilt_servo[AP_MOTORS_TILT_6]->get_trim());
             break;
         case SPIN_WHEN_ARMED:
             // sends output to motors when armed but not flying
@@ -134,8 +165,12 @@ void AP_MotorsTiltHexa::output_to_motors()
             rc_write(AP_MOTORS_MOT_4, calc_spin_up_to_pwm());
             rc_write(AP_MOTORS_MOT_5, calc_spin_up_to_pwm());
             rc_write(AP_MOTORS_MOT_6, calc_spin_up_to_pwm());
-            rc_write(AP_MOTORS_YAW_1, _yaw_servo1->get_trim());
-            rc_write(AP_MOTORS_YAW_2, _yaw_servo2->get_trim());
+            rc_write(AP_MOTORS_TILT_1, _tilt_servo[AP_MOTORS_TILT_1]->get_trim());
+            rc_write(AP_MOTORS_TILT_2, _tilt_servo[AP_MOTORS_TILT_2]->get_trim());
+            rc_write(AP_MOTORS_TILT_3, _tilt_servo[AP_MOTORS_TILT_3]->get_trim());
+            rc_write(AP_MOTORS_TILT_4, _tilt_servo[AP_MOTORS_TILT_4]->get_trim());
+            rc_write(AP_MOTORS_TILT_5, _tilt_servo[AP_MOTORS_TILT_5]->get_trim());
+            rc_write(AP_MOTORS_TILT_6, _tilt_servo[AP_MOTORS_TILT_6]->get_trim());
             break;
         case SPOOL_UP:
         case THROTTLE_UNLIMITED:
@@ -147,9 +182,12 @@ void AP_MotorsTiltHexa::output_to_motors()
             rc_write(AP_MOTORS_MOT_4, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[3], _motor_servo[AP_MOTORS_MOT_4])));
             rc_write(AP_MOTORS_MOT_5, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[4], _motor_servo[AP_MOTORS_MOT_5])));
             rc_write(AP_MOTORS_MOT_6, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[5], _motor_servo[AP_MOTORS_MOT_6])));
-            rc_write(AP_MOTORS_YAW_1, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo1));
-            rc_write(AP_MOTORS_YAW_2, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo2));
-            //printf("_pivot_angle = %f\n", _pivot_angle);
+            rc_write(AP_MOTORS_TILT_1, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_1], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_1]));
+            rc_write(AP_MOTORS_TILT_2, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_2], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_2]));
+            rc_write(AP_MOTORS_TILT_3, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_3], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_3]));
+            rc_write(AP_MOTORS_TILT_4, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_4], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_4]));
+            rc_write(AP_MOTORS_TILT_5, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_5], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_5]));
+            rc_write(AP_MOTORS_TILT_6, calc_yaw_radio_output(_tilt[AP_MOTORS_TILT_6], radians(_yaw_servo_angle_max_deg), _tilt_servo[AP_MOTORS_TILT_6]));
             break;
     }
 }
@@ -177,8 +215,12 @@ uint16_t AP_MotorsTiltHexa::get_motor_mask()
                        (1U << AP_MOTORS_MOT_4) |
                        (1U << AP_MOTORS_MOT_5) |
                        (1U << AP_MOTORS_MOT_6) |
-                       (1U << AP_MOTORS_YAW_1) |
-                       (1U << AP_MOTORS_YAW_2));
+                       (1U << AP_MOTORS_TILT_1) |
+					   (1U << AP_MOTORS_TILT_2) |
+					   (1U << AP_MOTORS_TILT_3) |
+					   (1U << AP_MOTORS_TILT_4) |
+					   (1U << AP_MOTORS_TILT_5) |
+                       (1U << AP_MOTORS_TILT_6));
 }
 
 // output_armed - sends commands to the motors
@@ -192,6 +234,8 @@ void AP_MotorsTiltHexa::output_armed_stabilizing()
     float   roll_thrust;                // roll thrust input value, +/- 1.0
     float   pitch_thrust;               // pitch thrust input value, +/- 1.0
     float   yaw_thrust;                 // yaw thrust input value, +/- 1.0
+    float 	forward_thrust;				// forward thrust input value, +/- 1.0
+    float	lateral_thrust;				// lateral thrust input value, +/- 1.0
     float   throttle_thrust;            // throttle thrust input value, 0.0 - 1.0
 
     // sanity check YAW_SV_ANGLE parameter value to avoid divide by zero
@@ -200,20 +244,31 @@ void AP_MotorsTiltHexa::output_armed_stabilizing()
     // apply voltage and air pressure compensation
     roll_thrust = _roll_in * get_compensation_gain();
     pitch_thrust = _pitch_in * get_compensation_gain();
-    yaw_thrust = _yaw_in * get_compensation_gain()*sinf(radians(_yaw_servo_angle_max_deg)); // we scale this so a thrust request of 1.0f will ask for full servo deflection at full throttle
+    yaw_thrust = _yaw_in * get_compensation_gain();//*sinf(radians(_yaw_servo_angle_max_deg)); // we scale this so a thrust request of 1.0f will ask for full servo deflection at full throttle
+    forward_thrust = _forward_in * get_compensation_gain();
+    lateral_thrust = _lateral_in * get_compensation_gain();
     //User expects to have to compensate with more thrust when there is pitch or roll.
     throttle_thrust = get_throttle() * get_compensation_gain();
 
     // calculate angle of yaw pivot
     _pivot_angle = safe_asin(yaw_thrust);
 
+    printf("forward_thrust = %f\n", forward_thrust);
+    printf("_forward_in = %f\n", _forward_in);
+
     {
     	int n;
-    	for (n = 0; n < TILT_HEXA_QTY_MOTORS; n++)
+    	for (n = AP_MOTORS_MOT_1; n <= AP_MOTORS_MOT_6; n++)
     	{
     		_thrust[n] = constrain_float(
     				pitch_thrust * _pitch_factor[n] + roll_thrust * _roll_factor[n] + throttle_thrust,
 					0, 1);
+    	}
+    	for (n = AP_MOTORS_TILT_1; n <= AP_MOTORS_TILT_6; n++)
+    	{
+    		_tilt[n] = constrain_float(
+    				forward_thrust * _forward_factor[n] + lateral_thrust * _lateral_factor[n] + yaw_thrust,
+					-1, 1);
     	}
     }
 }
@@ -256,11 +311,27 @@ void AP_MotorsTiltHexa::output_test(uint8_t motor_seq, int16_t pwm)
 			break;
         case 7:
 			// tilt 1
-			rc_write(AP_MOTORS_YAW_1, pwm);
+			rc_write(AP_MOTORS_TILT_1, pwm);
 			break;
         case 8:
+			// tilt 4
+			rc_write(AP_MOTORS_TILT_4, pwm);
+			break;
+        case 9:
+        	// tilt 6
+        	rc_write(AP_MOTORS_TILT_6, pwm);
+        	break;
+        case 10:
 			// tilt 2
-			rc_write(AP_MOTORS_YAW_2, pwm);
+			rc_write(AP_MOTORS_TILT_2, pwm);
+			break;
+		case 11:
+			// tilt 3
+			rc_write(AP_MOTORS_TILT_3, pwm);
+			break;
+		case 12:
+			// tilt 5
+			rc_write(AP_MOTORS_TILT_5, pwm);
 			break;
         default:
             // do nothing

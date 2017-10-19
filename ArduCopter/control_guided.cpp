@@ -396,6 +396,8 @@ void Copter::guided_takeoff_run()
 
     // call attitude controller
     auto_takeoff_attitude_run(target_yaw_rate);
+    motors->set_forward(wp_nav->get_forward());
+    motors->set_lateral(wp_nav->get_lateral());
 }
 
 // guided_pos_control_run - runs the guided position controller
@@ -446,6 +448,8 @@ void Copter::guided_pos_control_run()
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
         attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
     }
+    motors->set_forward(wp_nav->get_forward());
+    motors->set_lateral(wp_nav->get_lateral());
 }
 
 // guided_vel_control_run - runs the guided velocity controller
@@ -508,6 +512,8 @@ void Copter::guided_vel_control_run()
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
         attitude_control->input_euler_angle_roll_pitch_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
     }
+    motors->set_forward(pos_control->get_forward());
+    motors->set_lateral(pos_control->get_lateral());
 }
 
 // guided_posvel_control_run - runs the guided spline controller
@@ -588,6 +594,9 @@ void Copter::guided_posvel_control_run()
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
         attitude_control->input_euler_angle_roll_pitch_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
     }
+
+    motors->set_forward(pos_control->get_forward());
+    motors->set_lateral(pos_control->get_lateral());
 }
 
 // guided_angle_control_run - runs the guided angle controller
@@ -653,6 +662,8 @@ void Copter::guided_angle_control_run()
     // call position controller
     pos_control->set_alt_target_from_climb_rate_ff(climb_rate_cms, G_Dt, false);
     pos_control->update_z_controller();
+    motors->set_forward(0);
+    motors->set_lateral(0);
 }
 
 // helper function to update position controller's desired velocity while respecting acceleration limits

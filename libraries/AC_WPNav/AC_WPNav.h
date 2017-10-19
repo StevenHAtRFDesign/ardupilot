@@ -255,6 +255,8 @@ public:
     /// get desired roll, pitch which should be fed into stabilize controllers
     int32_t get_roll() const { return _pos_control.get_roll(); }
     int32_t get_pitch() const { return _pos_control.get_pitch(); }
+    float get_forward() const { return _pos_control.get_forward(); }
+    float get_lateral() const { return _pos_control.get_lateral() ; }
 
     /// get_desired_alt - get desired altitude (in cm above ekf origin) from loiter or wp controller which should be fed into throttle controller
     float get_desired_alt() const { return _pos_control.get_alt_target(); }
