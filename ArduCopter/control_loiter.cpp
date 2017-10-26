@@ -135,7 +135,10 @@ void Copter::loiter_run()
         pos_control->relax_alt_hold_controllers(0.0f);   // forces throttle output to go to zero
 #endif
         wp_nav->update_loiter(ekfGndSpdLimit, ekfNavVelGainScaler);
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+
+        level.InputFromWPNav(wp_nav, attitude_control, motors);
+
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
         pos_control->update_z_controller();
         break;
 
@@ -161,8 +164,10 @@ void Copter::loiter_run()
         // run loiter controller
         wp_nav->update_loiter(ekfGndSpdLimit, ekfNavVelGainScaler);
 
+        level.InputFromWPNav(wp_nav, attitude_control, motors);
+
         // call attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 
         // update altitude target and call position controller
         pos_control->set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);
@@ -180,6 +185,8 @@ void Copter::loiter_run()
         wp_nav->init_loiter_target();
         attitude_control->reset_rate_controller_I_terms();
         attitude_control->set_yaw_target_to_current_heading();
+        motors->set_forward(0);
+        motors->set_lateral(0);
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(0, 0, 0, get_smoothing_gain());
         pos_control->relax_alt_hold_controllers(0.0f);   // forces throttle output to go to zero
         pos_control->update_z_controller();
@@ -199,8 +206,9 @@ void Copter::loiter_run()
         // run loiter controller
         wp_nav->update_loiter(ekfGndSpdLimit, ekfNavVelGainScaler);
 
+        level.InputFromWPNav(wp_nav, attitude_control, motors);
         // call attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 
         // adjust climb rate using rangefinder
         if (rangefinder_alt_ok()) {

@@ -50,7 +50,7 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     _tilt_servo[AP_MOTORS_TILT_4] = SRV_Channels::get_channel_for(SRV_Channel::k_motor10, AP_MOTORS_TILT_4);
     _tilt_servo[AP_MOTORS_TILT_5] = SRV_Channels::get_channel_for(SRV_Channel::k_motor11, AP_MOTORS_TILT_5);
     _tilt_servo[AP_MOTORS_TILT_6] = SRV_Channels::get_channel_for(SRV_Channel::k_motor12, AP_MOTORS_TILT_6);
-    for (int n = AP_MOTORS_TILT_1; n <= AP_MOTORS_TILT_6; n++)
+    for (uint8_t n = AP_MOTORS_TILT_1; n <= AP_MOTORS_TILT_6; n++)
     {
     	if (_tilt_servo[n] == NULL)
     	{
@@ -253,11 +253,11 @@ void AP_MotorsTiltHexa::output_armed_stabilizing()
     // calculate angle of yaw pivot
     _pivot_angle = safe_asin(yaw_thrust);
 
-    printf("forward_thrust = %f\n", forward_thrust);
-    printf("_forward_in = %f\n", _forward_in);
+    //printf("forward_thrust = %f\n", forward_thrust);
+    //printf("_forward_in = %f\n", _forward_in);
 
     {
-    	int n;
+    	uint8_t n;
     	for (n = AP_MOTORS_MOT_1; n <= AP_MOTORS_MOT_6; n++)
     	{
     		_thrust[n] = constrain_float(

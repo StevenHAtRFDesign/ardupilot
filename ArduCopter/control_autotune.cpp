@@ -449,7 +449,9 @@ void Copter::autotune_run()
         }
         attitude_control->reset_rate_controller_I_terms();
         attitude_control->set_yaw_target_to_current_heading();
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
+
+        level.InputPitchRollMax(target_pitch, target_roll, aparm.angle_max, motors);
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
         pos_control->relax_alt_hold_controllers(0.0f);
         pos_control->update_z_controller();
     }else{
@@ -484,12 +486,17 @@ void Copter::autotune_run()
             autotune_get_poshold_attitude(target_roll, target_pitch, autotune_desired_yaw);
         }
 
+        level.InputMaxPitchRoll(aparm.angle_max);
+        level.InputPitchRollPreTargets(target_pitch, target_roll);
+
         // set motors to full range
         motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
         // if pilot override call attitude controller
         if (autotune_state.pilot_override || autotune_state.mode != AUTOTUNE_MODE_TUNING) {
-            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
+        	motors->set_forward(level.GetForwardTarget());
+        	motors->set_lateral(level.GetLateralTarget());
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
         }else{
             // somehow get attitude requests from autotuning
             autotune_attitude_control();

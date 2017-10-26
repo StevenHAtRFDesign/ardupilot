@@ -135,8 +135,10 @@ void Copter::land_nogps_run()
     // set motors to full range
     motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
+    level.InputPitchRollMax(target_pitch, target_roll, aparm.angle_max, motors);
+
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 
     // pause before beginning land descent
     if(land_pause && millis()-land_start_time >= LAND_WITH_DELAY_MS) {
@@ -272,6 +274,8 @@ void Copter::land_run_horizontal_control()
 
     int32_t nav_roll  = wp_nav->get_roll();
     int32_t nav_pitch = wp_nav->get_pitch();
+    float nav_forward = wp_nav->get_forward();
+    float nav_lateral = wp_nav->get_lateral();
 
     if (g2.wp_navalt_min > 0) {
         // user has requested an altitude below which navigation
@@ -288,15 +292,17 @@ void Copter::land_run_horizontal_control()
             float ratio = attitude_limit_cd / total_angle_cd;
             nav_roll *= ratio;
             nav_pitch *= ratio;
+            nav_forward *= ratio;
+            nav_lateral *= ratio;
 
             // tell position controller we are applying an external limit
             pos_control->set_limit_accel_xy();
         }
     }
 
-    
+    level.InputPitchRollMax(nav_pitch, nav_roll, attitude_control->lean_angle_max(), motors);
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(nav_roll, nav_pitch, target_yaw_rate, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 }
 
 // land_do_not_use_GPS - forces land-mode to not use the GPS but instead rely on pilot input for roll and pitch

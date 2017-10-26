@@ -1086,8 +1086,15 @@ void Copter::load_parameters(void)
     AP_Param::convert_old_parameters(&conversion_table[0], ARRAY_SIZE(conversion_table));
     hal.console->printf("load_all took %uus\n", (unsigned)(micros() - before));
 
-    // setup AP_Param frame type flags
-    AP_Param::set_frame_type_flags(AP_PARAM_FRAME_COPTER);
+	// setup AP_Param frame type flags
+    if ((AP_Motors::motor_frame_class)g2.frame_class.get() == AP_Motors::MOTOR_FRAME_TILTHEXA)
+    {
+    	AP_Param::set_frame_type_flags(AP_PARAM_FRAME_TILTHEXA);
+    }
+    else
+    {
+		AP_Param::set_frame_type_flags(AP_PARAM_FRAME_COPTER);
+    }
     
 }
 

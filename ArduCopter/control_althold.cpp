@@ -67,6 +67,10 @@ void Copter::althold_run()
         althold_state = AltHold_Flying;
     }
 
+    level.InputPitchRollPreTargets(target_pitch, target_roll, attitude_control, motors);
+    target_roll = level.GetRollTarget();
+    target_pitch = level.GetPitchTarget();
+
     // Alt Hold State Machine
     switch (althold_state) {
 

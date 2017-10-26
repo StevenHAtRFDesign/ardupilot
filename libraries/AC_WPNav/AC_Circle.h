@@ -52,6 +52,8 @@ public:
     int32_t get_roll() const { return _pos_control.get_roll(); }
     int32_t get_pitch() const { return _pos_control.get_pitch(); }
     int32_t get_yaw() const { return _yaw; }
+    float get_forward() const { return _pos_control.get_forward(); }
+    float get_lateral() const { return _pos_control.get_lateral(); }
 
     // get_closest_point_on_circle - returns closest point on the circle
     //  circle's center should already have been set

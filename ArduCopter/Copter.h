@@ -133,6 +133,8 @@
 #include <SITL/SITL.h>
 #endif
 
+#include "level.h"
+
 
 class Copter : public AP_HAL::HAL::Callbacks {
 public:
@@ -188,6 +190,7 @@ private:
     RC_Channel *channel_pitch;
     RC_Channel *channel_throttle;
     RC_Channel *channel_yaw;
+    RC_Channel *channel_level;
 
     // Dataflash
     DataFlash_Class DataFlash;
@@ -517,6 +520,8 @@ private:
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;
     AC_Circle *circle_nav;
+
+    Level level;
 
     // Performance monitoring
     int16_t pmTest1;

@@ -69,8 +69,9 @@ void Copter::brake_run()
     // run brake controller
     wp_nav->update_brake(ekfGndSpdLimit, ekfNavVelGainScaler);
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), 0.0f, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), 0.0f, get_smoothing_gain());
 
     // body-frame rate controller is run directly from 100hz loop
 

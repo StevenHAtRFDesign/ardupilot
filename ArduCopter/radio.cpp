@@ -25,12 +25,16 @@ void Copter::init_rc_in()
     channel_pitch    = RC_Channels::rc_channel(rcmap.pitch()-1);
     channel_throttle = RC_Channels::rc_channel(rcmap.throttle()-1);
     channel_yaw      = RC_Channels::rc_channel(rcmap.yaw()-1);
+    channel_level	 = RC_Channels::rc_channel(rcmap.level()-1);
+
+    printf("rcmap.level() is %d\n", rcmap.level());
 
     // set rc channel ranges
     channel_roll->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
     channel_pitch->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
     channel_yaw->set_angle(ROLL_PITCH_YAW_INPUT_MAX);
     channel_throttle->set_range(1000);
+    channel_level->set_range(1000);
 
     //set auxiliary servo ranges
     RC_Channels::rc_channel(CH_5)->set_range(1000);
@@ -43,6 +47,8 @@ void Copter::init_rc_in()
 
     // initialise throttle_zero flag
     ap.throttle_zero = true;
+
+    level.SetRCChannel(channel_level);
 }
 
  // init_rc_out -- initialise motors and check if pilot wants to perform ESC calibration
