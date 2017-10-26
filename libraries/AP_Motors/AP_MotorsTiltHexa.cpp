@@ -68,19 +68,29 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     add_motor_num(AP_MOTORS_TILT_5);
     add_motor_num(AP_MOTORS_TILT_6);
 
-    ConfigureMotorFactors(AP_MOTORS_MOT_1, 0);
-    ConfigureMotorFactors(AP_MOTORS_MOT_2, 180);
-    ConfigureMotorFactors(AP_MOTORS_MOT_3, -120);
-    ConfigureMotorFactors(AP_MOTORS_MOT_4, 60);
-    ConfigureMotorFactors(AP_MOTORS_MOT_5, -60);
-    ConfigureMotorFactors(AP_MOTORS_MOT_6, 120);
+    float MotorOffsetAngle;
+    if (frame_type == MOTOR_FRAME_TYPE_X)
+    {
+    	MotorOffsetAngle = 30;
+    }
+    else
+    {
+    	MotorOffsetAngle = 0;
+    }
 
-    ConfigureTiltFactors(AP_MOTORS_TILT_1, 0);
-    ConfigureTiltFactors(AP_MOTORS_TILT_2, 180);
-    ConfigureTiltFactors(AP_MOTORS_TILT_3, -120);
-    ConfigureTiltFactors(AP_MOTORS_TILT_4, 60);
-    ConfigureTiltFactors(AP_MOTORS_TILT_5, -60);
-    ConfigureTiltFactors(AP_MOTORS_TILT_6, 120);
+    ConfigureMotorFactors(AP_MOTORS_MOT_1, 0+MotorOffsetAngle);
+    ConfigureMotorFactors(AP_MOTORS_MOT_2, 180+MotorOffsetAngle);
+    ConfigureMotorFactors(AP_MOTORS_MOT_3, -120+MotorOffsetAngle);
+    ConfigureMotorFactors(AP_MOTORS_MOT_4, 60+MotorOffsetAngle);
+    ConfigureMotorFactors(AP_MOTORS_MOT_5, -60+MotorOffsetAngle);
+    ConfigureMotorFactors(AP_MOTORS_MOT_6, 120+MotorOffsetAngle);
+
+    ConfigureTiltFactors(AP_MOTORS_TILT_1, 0+MotorOffsetAngle);
+    ConfigureTiltFactors(AP_MOTORS_TILT_2, 180+MotorOffsetAngle);
+    ConfigureTiltFactors(AP_MOTORS_TILT_3, -120+MotorOffsetAngle);
+    ConfigureTiltFactors(AP_MOTORS_TILT_4, 60+MotorOffsetAngle);
+    ConfigureTiltFactors(AP_MOTORS_TILT_5, -60+MotorOffsetAngle);
+    ConfigureTiltFactors(AP_MOTORS_TILT_6, 120+MotorOffsetAngle);
 
     // record successful initialisation if what we setup was the desired frame_class
     _flags.initialised_ok = (frame_class == MOTOR_FRAME_TILTHEXA);
