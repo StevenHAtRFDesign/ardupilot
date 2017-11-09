@@ -15,6 +15,11 @@
 #include "AC_WPNav/AC_Circle.h"
 #include "AC_AttitudeControl/AC_PosControl.h"
 
+/*
+ * A class for managing level flight of tilt hexacopter, given pitch and roll inputs
+ * and a "mix" input (0 to 1) which controls whether flight should be via whole body pitch and
+ * roll (0), or via motor tilt (1).
+ */
 class Level
 {
 public:

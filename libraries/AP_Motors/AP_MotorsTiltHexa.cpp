@@ -78,6 +78,8 @@ void AP_MotorsTiltHexa::init(motor_frame_class frame_class, motor_frame_type fra
     	MotorOffsetAngle = 0;
     }
 
+    //printf("Motor offset angle %f\n", MotorOffsetAngle);
+
     ConfigureMotorFactors(AP_MOTORS_MOT_1, 0+MotorOffsetAngle);
     ConfigureMotorFactors(AP_MOTORS_MOT_2, 180+MotorOffsetAngle);
     ConfigureMotorFactors(AP_MOTORS_MOT_3, -120+MotorOffsetAngle);
