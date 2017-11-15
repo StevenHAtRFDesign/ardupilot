@@ -522,6 +522,7 @@ private:
     AC_Circle *circle_nav;
 
     Level level;
+    LevelVelocityTargetScale LVTS;
 
     // Performance monitoring
     int16_t pmTest1;
@@ -1161,6 +1162,7 @@ private:
     void init_capabilities(void);
     void dataflash_periodic(void);
     void accel_cal_update(void);
+    float get_vel_target_scale(void);
 
 public:
     void mavlink_delay_cb();

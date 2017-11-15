@@ -38,6 +38,7 @@ public:
 	float GetRollTarget(void);
 	float GetForwardTarget(void);
 	float GetLateralTarget(void);
+	float GetVelocityTargetScale(void);
 private:
 	float _PitchPreTarget;
 	float _RollPreTarget;
@@ -46,5 +47,14 @@ private:
 	float GetMix(void);
 };
 
+class LevelVelocityTargetScale : public AP_Value<float>
+{
+public:
+	//LevelVelocityTargetScale(Level *pL);
+	void SetLevel(Level *pL);
+	virtual float GetValue();
+private:
+	Level *_pLevel;
+};
 
 #endif /* ARDUCOPTER_LEVEL_H_ */

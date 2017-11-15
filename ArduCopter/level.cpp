@@ -166,6 +166,12 @@ float Level::GetRollTarget(void)
 	return (1 - GetMix()) * _RollPreTarget;
 }
 
+float Level::GetVelocityTargetScale(void)
+{
+	//return 1;
+	return 1.0 - (99.0 * GetMix() / 100.0);
+}
+
 /*
  * Returns the level mix fraction.
  */
@@ -182,3 +188,12 @@ float Level::GetMix(void)
 	}
 }
 
+void LevelVelocityTargetScale::SetLevel(Level *pL)
+{
+	_pLevel = pL;
+}
+
+float LevelVelocityTargetScale::GetValue()
+{
+	return _pLevel->GetVelocityTargetScale();
+}

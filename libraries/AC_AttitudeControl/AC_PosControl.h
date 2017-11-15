@@ -10,6 +10,7 @@
 #include "AC_AttitudeControl.h" // Attitude control library
 #include <AP_Motors/AP_Motors.h>          // motors library
 #include <AP_Vehicle/AP_Vehicle.h>         // common vehicle parameters
+#include <AP_Value/AP_Value.h>
 
 
 // position controller default definitions
@@ -300,6 +301,7 @@ public:
 
     // time_since_last_xy_update - returns time in seconds since the horizontal position controller was last run
     float time_since_last_xy_update() const;
+    void set_vel_target_scaler(AP_Value<float> *pS);
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -412,8 +414,8 @@ protected:
     // output from controller
     float       _roll_target;           // desired roll angle in centi-degrees calculated by position controller
     float       _pitch_target;          // desired roll pitch in centi-degrees calculated by position controller
-    float		_forward_target;		// desired forward
-    float		_lateral_target;		// desired lateral.  RHS is positive.
+    float		_forward_target;		// desired forward.  -1 to 1.
+    float		_lateral_target;		// desired lateral.  -1 to 1.  RHS is positive.
 
     // position controller internal variables
     Vector3f    _pos_target;            // target location in cm from home
@@ -435,4 +437,5 @@ protected:
     // ekf reset handling
     uint32_t    _ekf_xy_reset_ms;      // system time of last recorded ekf xy position reset
     uint32_t    _ekf_z_reset_ms;       // system time of last recorded ekf altitude reset
+    AP_Value<float> *_pvel_target_scaler;
 };

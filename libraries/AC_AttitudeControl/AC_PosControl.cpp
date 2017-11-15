@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <AP_HAL/AP_HAL.h>
 #include "AC_PosControl.h"
 #include <AP_Math/AP_Math.h>
@@ -76,6 +77,7 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _limit.vel_up = true;
     _limit.vel_down = true;
     _limit.accel_xy = true;
+    _pvel_target_scaler = NULL;
 }
 
 ///
@@ -827,6 +829,16 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
     Vector3f curr_pos = _inav.get_position();
     float linear_distance;      // the distance we swap between linear and sqrt velocity response
     float kP = ekfNavVelGainScaler * _p_pos_xy.kP(); // scale gains to compensate for noisy optical flow measurement in the EKF
+    float accel_cms = _accel_cms;
+
+    printf("Mode = %d\n", mode);
+
+    if (_pvel_target_scaler != NULL)
+	{
+    	printf("Accel reduced from %f to ", accel_cms);
+    	accel_cms *= _pvel_target_scaler->GetValue();
+    	printf("%f\n", accel_cms);
+	}
 
     // avoid divide by zero
     if (kP <= 0.0f) {
@@ -839,6 +851,10 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
 
         // constrain target position to within reasonable distance of current location
         _distance_to_target = norm(_pos_error.x, _pos_error.y);
+        /*
+         * The leash is a maximum distance which the target it assumed to be from the
+         * current location.  It depends upon maximum speed and maximum acceleration.
+         */
         if (_distance_to_target > _leash && _distance_to_target > 0.0f) {
             _pos_target.x = curr_pos.x + _leash * _pos_error.x/_distance_to_target;
             _pos_target.y = curr_pos.y + _leash * _pos_error.y/_distance_to_target;
@@ -849,17 +865,32 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
         }
 
         // calculate the distance at which we swap between linear and sqrt velocity response
-        linear_distance = _accel_cms/(2.0f*kP*kP);
+        /*
+         * Why do we have 2 separate regimes of velocity response?  What is the significance
+         * of the transition point between these two regimes?
+         *
+         * I think it migth be because the square root of x when x is less than 1 is greater than x.
+         * We don't want it to be going fast when it's nearly at it's target, just to slow down to
+         * zero bang-on it's target.  We want it to slow down a bit more before then.
+         *
+         * The transition point between the 2 regimes is chosen such that the term being square-rooted is 1.
+         *
+         * Reducing the acceleration (accel_cms) here to reflect the capabilities of the aircraft should work.
+         */
+        linear_distance = accel_cms/(2.0f*kP*kP);
 
         if (_distance_to_target > 2.0f*linear_distance) {
             // velocity response grows with the square root of the distance
-            float vel_sqrt = safe_sqrt(2.0f*_accel_cms*(_distance_to_target-linear_distance));
+        	// ...as per the relevant kinematic equation.
+            float vel_sqrt = safe_sqrt(2.0f*accel_cms*(_distance_to_target-linear_distance));
             _vel_target.x = vel_sqrt * _pos_error.x/_distance_to_target;
             _vel_target.y = vel_sqrt * _pos_error.y/_distance_to_target;
+            printf("sqrt\n");
         }else{
             // velocity response grows linearly with the distance
             _vel_target.x = kP * _pos_error.x;
             _vel_target.y = kP * _pos_error.y;
+            printf("linear\n");
         }
 
         if (mode == XY_MODE_POS_LIMITED_AND_VEL_FF) {
@@ -869,12 +900,17 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
 
             // scale velocity within limit
             float vel_total = norm(_vel_target.x, _vel_target.y);
+            //If moving faster than 2m/s...
             if (vel_total > POSCONTROL_VEL_XY_MAX_FROM_POS_ERR) {
+            	//Move at 2m/s
                 _vel_target.x = POSCONTROL_VEL_XY_MAX_FROM_POS_ERR * _vel_target.x/vel_total;
                 _vel_target.y = POSCONTROL_VEL_XY_MAX_FROM_POS_ERR * _vel_target.y/vel_total;
             }
 
-            // add velocity feed-forward
+            // add velocity feed-forward.
+            /*
+             * This seems to be for flight modes in which the velocity needs to be controlled.
+             */
             _vel_target.x += _vel_desired.x;
             _vel_target.y += _vel_desired.y;
         } else {
@@ -1094,3 +1130,9 @@ void AC_PosControl::check_for_ekf_z_reset()
         _ekf_z_reset_ms = reset_ms;
     }
 }
+
+void AC_PosControl::set_vel_target_scaler(AP_Value<float> *pS)
+{
+	_pvel_target_scaler = pS;
+}
+
