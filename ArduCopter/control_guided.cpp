@@ -134,7 +134,9 @@ void Copter::guided_posvel_control_start()
     const Vector3f& curr_vel = inertial_nav.get_velocity();
 
     // set target position and velocity to current position and velocity
+    pos_control->clear_ultimate_dest();
     pos_control->set_xy_target(curr_pos.x, curr_pos.y);
+    pos_control->clear_ultimate_dest();
     pos_control->set_desired_velocity_xy(curr_vel.x, curr_vel.y);
 
     // set vertical speed and acceleration
@@ -275,6 +277,8 @@ void Copter::guided_set_destination_posvel(const Vector3f& destination, const Ve
     guided_vel_target_cms = velocity;
 
     pos_control->set_pos_target(guided_pos_target_cm);
+    pos_control->set_ultimate_dest(guided_pos_target_cm);
+    printf("guided_set_destination_posvel\n");
 
     // log target
     Log_Write_GuidedTarget(guided_mode, destination, velocity);
@@ -573,6 +577,9 @@ void Copter::guided_posvel_control_run()
 
         // send position and velocity targets to position controller
         pos_control->set_pos_target(guided_pos_target_cm);
+        //pos_control->set_ultimate_dest(guided_pos_target_cm);
+        pos_control->clear_ultimate_dest();
+        printf("guided posvel ctrl...\n");
         pos_control->set_desired_velocity_xy(guided_vel_target_cms.x, guided_vel_target_cms.y);
 
         // run position controller

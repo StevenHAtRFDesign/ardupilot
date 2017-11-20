@@ -60,6 +60,7 @@ void Copter::precision_loiter_xy()
         target_vel_rel.y = -inertial_nav.get_velocity().y;
     }
     pos_control->set_xy_target(target_pos.x, target_pos.y);
+    pos_control->clear_ultimate_dest();
     pos_control->override_vehicle_velocity_xy(-target_vel_rel);
 }
 #endif

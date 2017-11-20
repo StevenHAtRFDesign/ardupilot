@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <AP_HAL/AP_HAL.h>
 #include "AC_WPNav.h"
 
@@ -164,6 +165,7 @@ void AC_WPNav::init_loiter_target(const Vector3f& position, bool reset_I)
 
     // set target position
     _pos_control.set_xy_target(position.x, position.y);
+    _pos_control.clear_ultimate_dest();
 
     // initialise feed forward velocity to zero
     _pos_control.set_desired_velocity_xy(0,0);
@@ -196,6 +198,7 @@ void AC_WPNav::init_loiter_target()
 
     // set target position
     _pos_control.set_xy_target(curr_pos.x, curr_pos.y);
+    _pos_control.clear_ultimate_dest();
 
     // move current vehicle velocity into feed forward velocity
     _pos_control.set_desired_velocity_xy(curr_vel.x, curr_vel.y);
@@ -216,6 +219,7 @@ void AC_WPNav::loiter_soften_for_landing()
 
     // set target position to current position
     _pos_control.set_xy_target(curr_pos.x, curr_pos.y);
+    _pos_control.clear_ultimate_dest();
     _pos_control.freeze_ff_xy();
 }
 
@@ -514,6 +518,8 @@ bool AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vecto
 
     // initialise intermediate point to the origin
     _pos_control.set_pos_target(origin + Vector3f(0,0,origin_terr_offset));
+    _pos_control.clear_ultimate_dest();
+    printf("set wp origin...\n");
     _track_desired = 0;             // target is at beginning of track
     _flags.reached_destination = false;
     _flags.fast_waypoint = false;   // default waypoint back to slow
@@ -554,6 +560,8 @@ void AC_WPNav::shift_wp_origin_to_current_pos()
 
     // move pos controller target and disable feed forward
     _pos_control.set_pos_target(curr_pos);
+    printf("shift wp origin...\n");
+    _pos_control.clear_ultimate_dest();
     _pos_control.freeze_ff_xy();
     _pos_control.freeze_ff_z();
 }
@@ -691,6 +699,8 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
     // convert final_target.z to altitude above the ekf origin
     final_target.z += terr_offset;
     _pos_control.set_pos_target(final_target);
+    _pos_control.set_ultimate_dest(_destination);
+    printf("advance_wp_target_along_track\n");
 
     // check if we've reached the waypoint
     if( !_flags.reached_destination ) {
@@ -1023,6 +1033,8 @@ bool AC_WPNav::set_spline_origin_and_destination(const Vector3f& origin, const V
 
     // initialise intermediate point to the origin
     _pos_control.set_pos_target(origin + Vector3f(0,0,terr_offset));
+    _pos_control.clear_ultimate_dest();
+    printf("set spline origin...\n");
     _flags.reached_destination = false;
     _flags.segment_type = SEGMENT_SPLINE;
     _flags.new_wp_destination = true;   // flag new waypoint so we can freeze the pos controller's feed forward and smooth the transition
@@ -1157,6 +1169,8 @@ bool AC_WPNav::advance_spline_target_along_track(float dt)
         // update target position
         target_pos.z += terr_offset;
         _pos_control.set_pos_target(target_pos);
+        _pos_control.set_ultimate_dest(_destination);
+        printf("advance_spline_target_along_track\n");
 
         // update the target yaw if origin and destination are at least 2m apart horizontally
         if (_track_length_xy >= WPNAV_YAW_DIST_MIN) {

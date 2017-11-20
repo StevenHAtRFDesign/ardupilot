@@ -302,6 +302,8 @@ public:
     // time_since_last_xy_update - returns time in seconds since the horizontal position controller was last run
     float time_since_last_xy_update() const;
     void set_vel_target_scaler(AP_Value<float> *pS);
+    void set_ultimate_dest(Vector3f d);
+    void clear_ultimate_dest(void);
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -438,4 +440,7 @@ protected:
     uint32_t    _ekf_xy_reset_ms;      // system time of last recorded ekf xy position reset
     uint32_t    _ekf_z_reset_ms;       // system time of last recorded ekf altitude reset
     AP_Value<float> *_pvel_target_scaler;
+    Vector3f	_ultimate_dest;				//The ultimate destination, to allow maximum
+    										//speed.  This allows overriding the moving target/spline stuff.
+    bool		_using_ultimate_dest;
 };
