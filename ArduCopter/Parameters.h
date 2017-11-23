@@ -188,6 +188,8 @@ public:
 
         // 97: RSSI
         k_param_rssi = 97,
+
+		k_param_level = 99,	//Level flight
                 
         //
         // 100: Inertial Nav
@@ -368,9 +370,12 @@ public:
 
         // 254,255: reserved
 
+
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
+
+    AP_Float		level;
 
     AP_Int16        format_version;
     AP_Int8         software_type;

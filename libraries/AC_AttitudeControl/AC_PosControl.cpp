@@ -77,7 +77,7 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _limit.vel_up = true;
     _limit.vel_down = true;
     _limit.accel_xy = true;
-    _pvel_target_scaler = NULL;
+    _paccel_mod = NULL;
     _using_ultimate_dest = false;
 }
 
@@ -849,10 +849,10 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
 
     //printf("Mode = %d\n", mode);
 
-    if (_pvel_target_scaler != NULL)
+    if (_paccel_mod != NULL)
 	{
     	printf("Accel reduced from %f to ", accel_cms);
-    	accel_cms *= _pvel_target_scaler->GetValue();
+    	accel_cms = _paccel_mod->Function(accel_cms);
     	printf("%f\n", accel_cms);
 	}
 
@@ -1171,9 +1171,9 @@ void AC_PosControl::check_for_ekf_z_reset()
     }
 }
 
-void AC_PosControl::set_vel_target_scaler(AP_Value<float> *pS)
+void AC_PosControl::set_accel_mod(AP_Function<float> *pS)
 {
-	_pvel_target_scaler = pS;
+	_paccel_mod = pS;
 }
 
 void AC_PosControl::set_ultimate_dest(Vector3f d)

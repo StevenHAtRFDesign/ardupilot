@@ -522,7 +522,7 @@ private:
     AC_Circle *circle_nav;
 
     Level level;
-    LevelVelocityTargetScale LVTS;
+    LevelModifyAcceleration LMA;
 
     // Performance monitoring
     int16_t pmTest1;

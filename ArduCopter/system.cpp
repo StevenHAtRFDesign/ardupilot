@@ -604,8 +604,8 @@ void Copter::allocate_motors(void)
     if (pos_control == nullptr) {
         AP_HAL::panic("Unable to allocate PosControl");
     }
-    LVTS.SetLevel(&level);
-    pos_control->set_vel_target_scaler(&LVTS);
+    LMA.SetLevel(&level);
+    pos_control->set_accel_mod(&LMA);
     AP_Param::load_object_from_eeprom(pos_control, pos_control->var_info);
 
     wp_nav = new AC_WPNav(inertial_nav, *ahrs_view, *pos_control, *attitude_control);
@@ -613,6 +613,7 @@ void Copter::allocate_motors(void)
         AP_HAL::panic("Unable to allocate WPNav");
     }
     AP_Param::load_object_from_eeprom(wp_nav, wp_nav->var_info);
+    AP_Param::load_object_from_eeprom(&level, level.var_info);
 
     circle_nav = new AC_Circle(inertial_nav, *ahrs_view, *pos_control);
     if (wp_nav == nullptr) {

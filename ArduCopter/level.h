@@ -39,20 +39,23 @@ public:
 	float GetForwardTarget(void);
 	float GetLateralTarget(void);
 	float GetVelocityTargetScale(void);
+	float ModifyAcceleration(float A);
+
+	static const struct AP_Param::GroupInfo var_info[];
 private:
 	float _PitchPreTarget;
 	float _RollPreTarget;
 	float _MaxPitchRoll;
+	AP_Float _Accel;
 	RC_Channel *_pChannel;
 	float GetMix(void);
 };
 
-class LevelVelocityTargetScale : public AP_Value<float>
+class LevelModifyAcceleration : public AP_Function<float>
 {
 public:
-	//LevelVelocityTargetScale(Level *pL);
 	void SetLevel(Level *pL);
-	virtual float GetValue();
+	virtual float Function(float);
 private:
 	Level *_pLevel;
 };

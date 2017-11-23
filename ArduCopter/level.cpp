@@ -8,8 +8,21 @@
 #include <stdio.h>
 #include "level.h"
 
+const AP_Param::GroupInfo Level::var_info[] = {
+		// @Param: ACCEL_LEVEL
+		// @DisplayName: Waypoint acceleration for level flight
+		// @Description: Defines the horizontal acceleration in cm/s/s used during missions while in level flight
+		// @Units: cm/s/s
+		// @Range: 1 to 500
+		// @Increment: 1
+		// @User: Standard
+					//Name			//index		//Class	//Property		//Default
+		AP_GROUPINFO("ACCEL",       0, Level, _Accel, 1),
+};
+
 Level::Level(void)
 {
+	AP_Param::setup_object_defaults(this, var_info);
 	_MaxPitchRoll = 1;
 	_RollPreTarget = 0;
 	_PitchPreTarget = 0;
@@ -188,12 +201,18 @@ float Level::GetMix(void)
 	}
 }
 
-void LevelVelocityTargetScale::SetLevel(Level *pL)
+float Level::ModifyAcceleration(float A)
+{
+	float Mix = GetMix();
+	return (Mix * _Accel) + ((1 - Mix) * A);
+}
+
+void LevelModifyAcceleration::SetLevel(Level *pL)
 {
 	_pLevel = pL;
 }
 
-float LevelVelocityTargetScale::GetValue()
+float LevelModifyAcceleration::Function(float A)
 {
-	return _pLevel->GetVelocityTargetScale();
+	return _pLevel->ModifyAcceleration(A);
 }
