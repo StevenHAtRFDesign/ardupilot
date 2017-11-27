@@ -613,7 +613,6 @@ void Copter::allocate_motors(void)
         AP_HAL::panic("Unable to allocate WPNav");
     }
     AP_Param::load_object_from_eeprom(wp_nav, wp_nav->var_info);
-    AP_Param::load_object_from_eeprom(&level, level.var_info);
 
     circle_nav = new AC_Circle(inertial_nav, *ahrs_view, *pos_control);
     if (wp_nav == nullptr) {

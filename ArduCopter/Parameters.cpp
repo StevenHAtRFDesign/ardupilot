@@ -557,6 +557,13 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Advanced
     GSCALAR(acro_rp_expo,  "ACRO_RP_EXPO",    ACRO_RP_EXPO_DEFAULT),
 
+	// @Param: LEVEL_ACCEL
+	// @DisplayName: My New Parameter
+	// @Description: A description of my new parameter goes here
+	// @Range: 1 500
+	// @User: Standard
+	GSCALAR(level_accel, "LEVEL_ACCEL", 1),
+
     // @Param: VEL_XY_P
     // @DisplayName: Velocity (horizontal) P gain
     // @Description: Velocity (horizontal) P gain.  Converts the difference between desired velocity to a target acceleration
@@ -674,10 +681,6 @@ const AP_Param::Info Copter::var_info[] = {
     // @Group: WPNAV_
     // @Path: ../libraries/AC_WPNav/AC_WPNav.cpp
     GOBJECTPTR(wp_nav, "WPNAV_",       AC_WPNav),
-
-	// @Group: LEVEL_
-	// @Path: Level.cpp
-	GOBJECTPTR(level, "LEVEL_",       Level),
 
     // @Group: CIRCLE_
     // @Path: ../libraries/AC_WPNav/AC_Circle.cpp

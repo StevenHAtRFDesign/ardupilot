@@ -49,6 +49,7 @@ void Copter::init_rc_in()
     ap.throttle_zero = true;
 
     level.SetRCChannel(channel_level);
+    level.SetParameter(&g.level_accel);
 }
 
  // init_rc_out -- initialise motors and check if pilot wants to perform ESC calibration

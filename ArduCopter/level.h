@@ -40,14 +40,14 @@ public:
 	float GetLateralTarget(void);
 	float GetVelocityTargetScale(void);
 	float ModifyAcceleration(float A);
-
-	static const struct AP_Param::GroupInfo var_info[];
+	void SetParameter(AP_Float *pAccel);
+	float GetLevelAccel(void);
 private:
 	float _PitchPreTarget;
 	float _RollPreTarget;
 	float _MaxPitchRoll;
-	AP_Float _Accel;
 	RC_Channel *_pChannel;
+	AP_Float *_pAccel;
 	float GetMix(void);
 };
 

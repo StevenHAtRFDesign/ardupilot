@@ -8,25 +8,15 @@
 #include <stdio.h>
 #include "level.h"
 
-const AP_Param::GroupInfo Level::var_info[] = {
-		// @Param: ACCEL_LEVEL
-		// @DisplayName: Waypoint acceleration for level flight
-		// @Description: Defines the horizontal acceleration in cm/s/s used during missions while in level flight
-		// @Units: cm/s/s
-		// @Range: 1 to 500
-		// @Increment: 1
-		// @User: Standard
-					//Name			//index		//Class	//Property		//Default
-		AP_GROUPINFO("ACCEL",       0, Level, _Accel, 1),
-};
+#define LEVEL_DEFAULT_ACCEL_CMSS 1
 
 Level::Level(void)
 {
-	AP_Param::setup_object_defaults(this, var_info);
 	_MaxPitchRoll = 1;
 	_RollPreTarget = 0;
 	_PitchPreTarget = 0;
 	_pChannel = NULL;
+	_pAccel = NULL;
 }
 
 /*
@@ -179,12 +169,6 @@ float Level::GetRollTarget(void)
 	return (1 - GetMix()) * _RollPreTarget;
 }
 
-float Level::GetVelocityTargetScale(void)
-{
-	//return 1;
-	return 1.0 - (99.0 * GetMix() / 100.0);
-}
-
 /*
  * Returns the level mix fraction.
  */
@@ -203,8 +187,26 @@ float Level::GetMix(void)
 
 float Level::ModifyAcceleration(float A)
 {
+
 	float Mix = GetMix();
-	return (Mix * _Accel) + ((1 - Mix) * A);
+	return (Mix * GetLevelAccel()) + ((1 - Mix) * A);
+}
+
+void Level::SetParameter(AP_Float *pAccel)
+{
+	_pAccel = pAccel;
+}
+
+float Level::GetLevelAccel(void)
+{
+	if (_pAccel == NULL)
+	{
+		return LEVEL_DEFAULT_ACCEL_CMSS;
+	}
+	else
+	{
+		return _pAccel->get();
+	}
 }
 
 void LevelModifyAcceleration::SetLevel(Level *pL)
