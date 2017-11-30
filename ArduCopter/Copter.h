@@ -93,6 +93,7 @@
 #include <AP_Arming/AP_Arming.h>
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_SmartRTL/AP_SmartRTL.h>
+#include <AP_EngineMon/AP_EngineMon.h>
 
 // Configuration
 #include "defines.h"
@@ -626,6 +627,8 @@ private:
     // Top-level logic
     // setup the var_info table
     AP_Param param_loader;
+
+    AP_EngineMon engine_mon;
 
 #if FRAME_CONFIG == HELI_FRAME
     // Mode filter to reject RC Input glitches.  Filter size is 5, and it draws the 4th element, so it can reject 3 low glitches,

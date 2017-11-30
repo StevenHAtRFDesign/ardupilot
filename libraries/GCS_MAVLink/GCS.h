@@ -313,6 +313,7 @@ protected:
     bool try_send_camera_message(enum ap_message id);
     bool try_send_gps_message(enum ap_message id);
     void send_hwstatus();
+    void send_ice_engine_data();
 
 private:
 
