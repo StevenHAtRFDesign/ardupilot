@@ -20,6 +20,7 @@ AP_EngineMon::AP_EngineMon()
 void AP_EngineMon::SetGCS(GCS *pGCS)
 {
 	_pGCS = pGCS;
+
 }
 
 void AP_EngineMon::Process(void)
@@ -49,5 +50,15 @@ void AP_EngineMon::SendTestMsg(void)
 						0, 0, 0, 0, 0, 0, 0, 0, Temp, Temp, 0, 0, 0, 0, 0, 0);
 			}
 		}
+	}
+}
+
+void AP_EngineMon::SetUAVCANNode(uavcan::Node<0> *pUAVCANNode)
+{
+	_pUAVCANNode = pUAVCANNode;
+	if (_pUAVCANNode != nullptr)
+	{
+		_pUAVCANNode->getDispatcher().registerMessageListener(&_MsgListener);
+		uavcan::Subscriber<uavcan::protocol::debug::LogMessage> log_sub(NULL);
 	}
 }
