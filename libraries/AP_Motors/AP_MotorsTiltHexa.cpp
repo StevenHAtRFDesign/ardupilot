@@ -112,6 +112,13 @@ void AP_MotorsTiltHexa::enable()
     rc_enable_ch(AP_MOTORS_YAW_2);
 }
 
+void AP_MotorsTiltHexa::output_to_motor(int MotorIndex)
+{
+	rc_write(MotorIndex,
+		_motor_servo[MotorIndex]->get_trim() - 1500 +
+			calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[MotorIndex], _motor_servo[MotorIndex])));
+}
+
 void AP_MotorsTiltHexa::output_to_motors()
 {
     switch (_spool_mode) {
@@ -141,12 +148,12 @@ void AP_MotorsTiltHexa::output_to_motors()
         case THROTTLE_UNLIMITED:
         case SPOOL_DOWN:
             // set motor output based on thrust requests
-            rc_write(AP_MOTORS_MOT_1, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[0], _motor_servo[AP_MOTORS_MOT_1])));
-            rc_write(AP_MOTORS_MOT_2, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[1], _motor_servo[AP_MOTORS_MOT_2])));
-            rc_write(AP_MOTORS_MOT_3, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[2], _motor_servo[AP_MOTORS_MOT_3])));
-            rc_write(AP_MOTORS_MOT_4, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[3], _motor_servo[AP_MOTORS_MOT_4])));
-            rc_write(AP_MOTORS_MOT_5, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[4], _motor_servo[AP_MOTORS_MOT_5])));
-            rc_write(AP_MOTORS_MOT_6, calc_thrust_to_pwm(ReverseThrustIfRequired(_thrust[5], _motor_servo[AP_MOTORS_MOT_6])));
+        	output_to_motor(AP_MOTORS_MOT_1);
+        	output_to_motor(AP_MOTORS_MOT_2);
+        	output_to_motor(AP_MOTORS_MOT_3);
+        	output_to_motor(AP_MOTORS_MOT_4);
+        	output_to_motor(AP_MOTORS_MOT_5);
+        	output_to_motor(AP_MOTORS_MOT_6);
             rc_write(AP_MOTORS_YAW_1, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo1));
             rc_write(AP_MOTORS_YAW_2, calc_yaw_radio_output(_pivot_angle, radians(_yaw_servo_angle_max_deg), _yaw_servo2));
             //printf("_pivot_angle = %f\n", _pivot_angle);

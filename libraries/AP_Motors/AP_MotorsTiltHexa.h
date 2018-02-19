@@ -41,6 +41,7 @@ public:
 
     // output_to_motors - sends minimum values out to the motors
     virtual void        output_to_motors();
+    void				output_to_motor(int MotorIndex);
 
     // get_motor_mask - returns a bitmask of which outputs are being used for motors or servos (1 means being used)
     //  this can be used to ensure other pwm outputs (i.e. for servos) do not conflict
