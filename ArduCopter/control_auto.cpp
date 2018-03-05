@@ -273,13 +273,15 @@ void Copter::auto_wp_run()
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     }else{
         // roll, pitch from waypoint controller, yaw heading from auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(),true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(),true, get_smoothing_gain());
     }
 }
 
@@ -345,13 +347,15 @@ void Copter::auto_spline_run()
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     }else{
         // roll, pitch from waypoint controller, yaw heading from auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(), true, get_smoothing_gain());
     }
 }
 
@@ -502,8 +506,10 @@ void Copter::auto_circle_run()
     // call z-axis position controller
     pos_control->update_z_controller();
 
+    level.InputFromCircleNav(circle_nav, attitude_control, motors);
+
     // roll & pitch from waypoint controller, yaw rate from pilot
-    attitude_control->input_euler_angle_roll_pitch_yaw(circle_nav->get_roll(), circle_nav->get_pitch(), circle_nav->get_yaw(),true, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), circle_nav->get_yaw(),true, get_smoothing_gain());
 }
 
 #if NAV_GUIDED == ENABLED
@@ -582,7 +588,10 @@ void Copter::auto_loiter_run()
     failsafe_terrain_set_status(wp_nav->update_wpnav());
 
     pos_control->update_z_controller();
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 }
 
 // get_default_auto_yaw_mode - returns auto_yaw_mode based on WP_YAW_BEHAVIOR parameter
@@ -873,7 +882,9 @@ void Copter::auto_payload_place_run_loiter()
 
     // call attitude controller
     const float target_yaw_rate = 0;
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 
     // call position controller
     pos_control->update_z_controller();

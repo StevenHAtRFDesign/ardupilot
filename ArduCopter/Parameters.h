@@ -188,6 +188,8 @@ public:
 
         // 97: RSSI
         k_param_rssi = 97,
+
+		k_param_level_accel = 99,	//Level flight
                 
         //
         // 100: Inertial Nav
@@ -368,9 +370,16 @@ public:
 
         // 254,255: reserved
 
+		k_param_support_key_low = 256,
+		k_param_support_key_high = 257,
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
+
+    AP_Int32		support_key_low;
+    AP_Int32		support_key_high;
+
+    AP_Float		level_accel;
 
     AP_Int16        format_version;
     AP_Int8         software_type;

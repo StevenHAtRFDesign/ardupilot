@@ -10,6 +10,7 @@
 #if HAL_WITH_UAVCAN
 
 #include "AP_UAVCAN.h"
+#include "AP_EngineMon/AP_EngineMon.h"
 #include <GCS_MAVLink/GCS.h>
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
@@ -25,6 +26,8 @@
 #include <uavcan/equipment/actuator/Command.hpp>
 #include <uavcan/equipment/actuator/Status.hpp>
 #include <uavcan/equipment/esc/RawCommand.hpp>
+#include <rfd/equipment/eng_mon/StdData_t.hpp>
+#include <rfd/equipment/eng_mon/UpdateData_t.hpp>
 
 extern const AP_HAL::HAL& hal;
 
@@ -219,12 +222,29 @@ static void magnetic_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::a
     }
 }
 
+
+
 static void magnetic_cb0(const uavcan::ReceivedDataStructure<uavcan::equipment::ahrs::MagneticFieldStrength>& msg)
 {   magnetic_cb(msg, 0); }
 static void magnetic_cb1(const uavcan::ReceivedDataStructure<uavcan::equipment::ahrs::MagneticFieldStrength>& msg)
 {   magnetic_cb(msg, 1); }
 static void (*magnetic_cb_arr[2])(const uavcan::ReceivedDataStructure<uavcan::equipment::ahrs::MagneticFieldStrength>& msg)
         = { magnetic_cb0, magnetic_cb1 };
+
+/*
+ * This is where the engine monitor data comes in.  What to do with it from here?
+ */
+static void enginemon_data_cb(const uavcan::ReceivedDataStructure<rfd::equipment::eng_mon::UpdateData_t> &msg, uint8_t mgr)
+{
+	AP_EngineMon_Rx_StdData(msg);
+}
+
+static void enginemon_data_cb0(const uavcan::ReceivedDataStructure<rfd::equipment::eng_mon::UpdateData_t> &msg)
+{	enginemon_data_cb(msg, 0); }
+static void enginemon_data_cb1(const uavcan::ReceivedDataStructure<rfd::equipment::eng_mon::UpdateData_t> &msg)
+{	enginemon_data_cb(msg, 1); }
+static void (*enginemon_data_cb_arr[2])(const uavcan::ReceivedDataStructure<rfd::equipment::eng_mon::UpdateData_t> &msg)
+		= {enginemon_data_cb0, enginemon_data_cb1};
 
 static void air_data_sp_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::StaticPressure>& msg, uint8_t mgr)
 {
@@ -408,6 +428,18 @@ bool AP_UAVCAN::try_init(void)
                     if (air_data_st_start_res < 0) {
                         debug_uavcan(1, "UAVCAN Temperature subscriber start problem\n\r");
                         return false;
+                    }
+
+                    uavcan::Subscriber<rfd::equipment::eng_mon::UpdateData_t> *std_data_st;
+                    std_data_st = new uavcan::Subscriber<rfd::equipment::eng_mon::UpdateData_t>(*node);
+                    const int std_data_st_start_res = std_data_st->start(enginemon_data_cb_arr[_uavcan_i]);
+                    if (std_data_st_start_res < 0) {
+						debug_uavcan(1, "UAVCAN eng mon subscriber start problem\n\r");
+						return false;
+					}
+                    else
+                    {
+                    	AP_EngineMon_NotifySubscriberRegistered();
                     }
 
                     act_out_array[_uavcan_i] = new uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>(*node);

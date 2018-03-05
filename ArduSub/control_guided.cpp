@@ -102,6 +102,7 @@ void Sub::guided_posvel_control_start()
 
     // set target position and velocity to current position and velocity
     pos_control.set_xy_target(curr_pos.x, curr_pos.y);
+    pos_control.clear_ultimate_dest();
     pos_control.set_desired_velocity_xy(curr_vel.x, curr_vel.y);
 
     // set vertical speed and acceleration
@@ -224,6 +225,7 @@ void Sub::guided_set_destination_posvel(const Vector3f& destination, const Vecto
     posvel_vel_target_cms = velocity;
 
     pos_control.set_pos_target(posvel_pos_target_cm);
+    pos_control.set_ultimate_dest(posvel_pos_target_cm);
 }
 
 // set guided mode angle target
@@ -427,6 +429,7 @@ void Sub::guided_posvel_control_run()
 
         // send position and velocity targets to position controller
         pos_control.set_pos_target(posvel_pos_target_cm);
+        pos_control.clear_ultimate_dest();
         pos_control.set_desired_velocity_xy(posvel_vel_target_cms.x, posvel_vel_target_cms.y);
 
         // run position controller

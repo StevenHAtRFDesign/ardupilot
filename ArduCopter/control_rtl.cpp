@@ -165,13 +165,15 @@ void Copter::rtl_climb_return_run()
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     }else{
         // roll, pitch from waypoint controller, yaw heading from auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(),true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(),true, get_smoothing_gain());
     }
 
     // check if we've completed this stage of RTL
@@ -232,13 +234,14 @@ void Copter::rtl_loiterathome_run()
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     }else{
         // roll, pitch from waypoint controller, yaw heading from auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(),true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(),true, get_smoothing_gain());
     }
 
     // check if we've completed this stage of RTL
@@ -330,8 +333,10 @@ void Copter::rtl_descent_run()
     pos_control->set_alt_target_with_slew(rtl_path.descent_target.alt, G_Dt);
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
     // roll & pitch from waypoint controller, yaw rate from pilot
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
 
     // check if we've reached within 20cm of final altitude
     rtl_state_complete = abs(rtl_path.descent_target.alt - current_loc.alt) < 20;

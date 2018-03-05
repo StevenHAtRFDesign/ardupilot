@@ -74,6 +74,13 @@ Copter::Copter(void)
     // init sensor error logging flags
     sensor_health.baro = true;
     sensor_health.compass = true;
+
+    AP_EngineMon_Init();
+    AP_EngineMon_SetGCS(&_gcs);
+
+    //pUAVCAN = new AP_UAVCAN();
+    //pUAVCAN->try_init();
+    //pUAVCAN = NULL;
 }
 
 Copter copter;

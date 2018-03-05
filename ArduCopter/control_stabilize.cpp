@@ -51,8 +51,11 @@ void Copter::stabilize_run()
     // get pilot's desired throttle
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->get_control_in());
 
+    level.InputPitchRollMax(target_pitch, target_roll, aparm.angle_max, motors);
+
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate, get_smoothing_gain());
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(),
+    		target_yaw_rate, get_smoothing_gain());
 
     // body-frame rate controller is run directly from 100hz loop
 

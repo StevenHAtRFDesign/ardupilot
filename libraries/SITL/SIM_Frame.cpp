@@ -131,11 +131,21 @@ static Motor tilttri_vectored_motors[] =
 static Motor tilthexa_motors[] =
 {
     Motor(AP_MOTORS_MOT_1,    0, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1, AP_MOTORS_MOT_7, -15, 15, -1, 0, 0),
-    Motor(AP_MOTORS_MOT_2,  180, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 4, AP_MOTORS_MOT_7, 15, -15, -1, 0, 0),
-    Motor(AP_MOTORS_MOT_3, -120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  5, AP_MOTORS_MOT_7, 7.5, -7.5, AP_MOTORS_MOT_7, 13, -13),
-    Motor(AP_MOTORS_MOT_4,   60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 2, AP_MOTORS_MOT_7, -7.5, 7.5, AP_MOTORS_MOT_7, -13, 13),
-    Motor(AP_MOTORS_MOT_5,  -60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 6, AP_MOTORS_MOT_7, -7.5, 7.5, AP_MOTORS_MOT_7, 13, -13),
-    Motor(AP_MOTORS_MOT_6,  120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  3, AP_MOTORS_MOT_7, 7.5, -7.5, AP_MOTORS_MOT_7, -13, 13),
+    Motor(AP_MOTORS_MOT_2,  180, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 4, AP_MOTORS_MOT_8, 15, -15, -1, 0, 0),
+    Motor(AP_MOTORS_MOT_3, -120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  5, AP_MOTORS_MOT_9, 7.5, -7.5, AP_MOTORS_MOT_9, 13, -13),
+    Motor(AP_MOTORS_MOT_4,   60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 2, AP_MOTORS_MOT_10, -7.5, 7.5, AP_MOTORS_MOT_10, -13, 13),
+    Motor(AP_MOTORS_MOT_5,  -60, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 6, AP_MOTORS_MOT_11, -7.5, 7.5, AP_MOTORS_MOT_11, 13, -13),
+    Motor(AP_MOTORS_MOT_6,  120, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  3, AP_MOTORS_MOT_12, 7.5, -7.5, AP_MOTORS_MOT_12, -13, 13),
+};
+
+static Motor tilthexax_motors[] =
+{
+    Motor(AP_MOTORS_MOT_1,   30, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1, AP_MOTORS_MOT_7, -13, 13, AP_MOTORS_MOT_7, -7.5, 7.5),
+    Motor(AP_MOTORS_MOT_2,  210, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 4, AP_MOTORS_MOT_8, 13, -13, AP_MOTORS_MOT_8, 7.5, -7.5),
+    Motor(AP_MOTORS_MOT_3, -90,  AP_MOTORS_MATRIX_YAW_FACTOR_CW,  5, -1, 0, 0, AP_MOTORS_MOT_9, 15, -15),
+    Motor(AP_MOTORS_MOT_4,   90, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 2, -1, 0, 0, AP_MOTORS_MOT_10, -15, 15),
+    Motor(AP_MOTORS_MOT_5,  -30, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 6, AP_MOTORS_MOT_11, -13, 13, AP_MOTORS_MOT_11, 7.5, -7.5),
+    Motor(AP_MOTORS_MOT_6,  150, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  3, AP_MOTORS_MOT_12, 13, -13, AP_MOTORS_MOT_12, -7.5, 7.5),
 };
 
 static Motor y6_motors[] =
@@ -182,7 +192,8 @@ static Frame supported_frames[] =
     Frame("tilttri",   3, tilttri_motors),
     Frame("y6",        6, y6_motors),
     Frame("firefly",   6, firefly_motors),
-	Frame("tilthexa",   6, tilthexa_motors),
+	Frame("tilthexa",  6, tilthexa_motors),
+	Frame("tilthexax", 6, tilthexax_motors),
 };
 
 void Frame::init(float _mass, float hover_throttle, float _terminal_velocity, float _terminal_rotation_rate)

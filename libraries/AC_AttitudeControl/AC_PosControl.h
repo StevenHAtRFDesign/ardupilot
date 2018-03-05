@@ -10,6 +10,7 @@
 #include "AC_AttitudeControl.h" // Attitude control library
 #include <AP_Motors/AP_Motors.h>          // motors library
 #include <AP_Vehicle/AP_Vehicle.h>         // common vehicle parameters
+#include <AP_Function/AP_Function.h>
 
 
 // position controller default definitions
@@ -282,6 +283,8 @@ public:
     /// get desired roll, pitch which should be fed into stabilize controllers
     float get_roll() const { return _roll_target; }
     float get_pitch() const { return _pitch_target; }
+    float get_forward() const { return _forward_target; }
+    float get_lateral() const { return _lateral_target; }
 
     // get_leash_xy - returns horizontal leash length in cm
     float get_leash_xy() const { return _leash; }
@@ -298,6 +301,9 @@ public:
 
     // time_since_last_xy_update - returns time in seconds since the horizontal position controller was last run
     float time_since_last_xy_update() const;
+    void set_accel_mod(AP_Function<float> *pS);
+    void set_ultimate_dest(Vector3f d);
+    void clear_ultimate_dest(void);
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -410,6 +416,8 @@ protected:
     // output from controller
     float       _roll_target;           // desired roll angle in centi-degrees calculated by position controller
     float       _pitch_target;          // desired roll pitch in centi-degrees calculated by position controller
+    float		_forward_target;		// desired forward.  -1 to 1.
+    float		_lateral_target;		// desired lateral.  -1 to 1.  RHS is positive.
 
     // position controller internal variables
     Vector3f    _pos_target;            // target location in cm from home
@@ -431,4 +439,8 @@ protected:
     // ekf reset handling
     uint32_t    _ekf_xy_reset_ms;      // system time of last recorded ekf xy position reset
     uint32_t    _ekf_z_reset_ms;       // system time of last recorded ekf altitude reset
+    AP_Function<float> *_paccel_mod;
+    Vector3f	_ultimate_dest;				//The ultimate destination, to allow maximum
+    										//speed.  This allows overriding the moving target/spline stuff.
+    bool		_using_ultimate_dest;
 };

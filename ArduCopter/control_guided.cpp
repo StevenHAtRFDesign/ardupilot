@@ -134,7 +134,9 @@ void Copter::guided_posvel_control_start()
     const Vector3f& curr_vel = inertial_nav.get_velocity();
 
     // set target position and velocity to current position and velocity
+    pos_control->clear_ultimate_dest();
     pos_control->set_xy_target(curr_pos.x, curr_pos.y);
+    pos_control->clear_ultimate_dest();
     pos_control->set_desired_velocity_xy(curr_vel.x, curr_vel.y);
 
     // set vertical speed and acceleration
@@ -275,6 +277,8 @@ void Copter::guided_set_destination_posvel(const Vector3f& destination, const Ve
     guided_vel_target_cms = velocity;
 
     pos_control->set_pos_target(guided_pos_target_cm);
+    pos_control->set_ultimate_dest(guided_pos_target_cm);
+    printf("guided_set_destination_posvel\n");
 
     // log target
     Log_Write_GuidedTarget(guided_mode, destination, velocity);
@@ -435,16 +439,18 @@ void Copter::guided_pos_control_run()
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
+    level.InputFromWPNav(wp_nav, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     } else if (auto_yaw_mode == AUTO_YAW_RATE) {
         // roll & pitch from waypoint controller, yaw rate from mavlink command or mission item
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_yaw_rate_cds(), get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_yaw_rate_cds(), get_smoothing_gain());
     } else {
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(), true, get_smoothing_gain());
     }
 }
 
@@ -497,16 +503,18 @@ void Copter::guided_vel_control_run()
     // call velocity controller which includes z axis controller
     pos_control->update_vel_controller_xyz(ekfNavVelGainScaler);
 
+    level.InputFromPosControl(pos_control, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(pos_control->get_roll(), pos_control->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     } else if (auto_yaw_mode == AUTO_YAW_RATE) {
         // roll & pitch from velocity controller, yaw rate from mavlink command or mission item
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_yaw_rate_cds(), get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_yaw_rate_cds(), get_smoothing_gain());
     } else {
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(), true, get_smoothing_gain());
     }
 }
 
@@ -569,6 +577,9 @@ void Copter::guided_posvel_control_run()
 
         // send position and velocity targets to position controller
         pos_control->set_pos_target(guided_pos_target_cm);
+        //pos_control->set_ultimate_dest(guided_pos_target_cm);
+        pos_control->clear_ultimate_dest();
+        printf("guided posvel ctrl...\n");
         pos_control->set_desired_velocity_xy(guided_vel_target_cms.x, guided_vel_target_cms.y);
 
         // run position controller
@@ -577,16 +588,18 @@ void Copter::guided_posvel_control_run()
 
     pos_control->update_z_controller();
 
+    level.InputFromPosControl(pos_control, attitude_control, motors);
+
     // call attitude controller
     if (auto_yaw_mode == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(pos_control->get_roll(), pos_control->get_pitch(), target_yaw_rate, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), target_yaw_rate, get_smoothing_gain());
     } else if (auto_yaw_mode == AUTO_YAW_RATE) {
         // roll & pitch from position-velocity controller, yaw rate from mavlink command or mission item
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_yaw_rate_cds(), get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_yaw_rate_cds(), get_smoothing_gain());
     } else {
         // roll, pitch from waypoint controller, yaw heading from GCS or auto_heading()
-        attitude_control->input_euler_angle_roll_pitch_yaw(pos_control->get_roll(), pos_control->get_pitch(), get_auto_heading(), true, get_smoothing_gain());
+        attitude_control->input_euler_angle_roll_pitch_yaw(level.GetRollTarget(), level.GetPitchTarget(), get_auto_heading(), true, get_smoothing_gain());
     }
 }
 
@@ -653,6 +666,8 @@ void Copter::guided_angle_control_run()
     // call position controller
     pos_control->set_alt_target_from_climb_rate_ff(climb_rate_cms, G_Dt, false);
     pos_control->update_z_controller();
+    motors->set_forward(0);
+    motors->set_lateral(0);
 }
 
 // helper function to update position controller's desired velocity while respecting acceleration limits

@@ -1735,6 +1735,7 @@ void QuadPlane::vtol_position_controller(void)
 
         const Vector3f& curr_pos = inertial_nav.get_position();
         pos_control->set_xy_target(curr_pos.x, curr_pos.y);
+        pos_control->clear_ultimate_dest();
 
         pos_control->freeze_ff_xy();
         
@@ -1785,6 +1786,7 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_controller->update_waypoint(plane.prev_WP_loc, loc);
 
         pos_control->set_xy_target(poscontrol.target.x, poscontrol.target.y);
+        pos_control->clear_ultimate_dest();
         
         // run loiter controller
         wp_nav->update_loiter(ekfGndSpdLimit, ekfNavVelGainScaler);

@@ -10,9 +10,14 @@
 
 #include "AP_Motors_Class.h"
 
-// tail servo uses channel 7
-#define AP_MOTORS_YAW_1    AP_MOTORS_MOT_7
-#define AP_MOTORS_YAW_2    AP_MOTORS_MOT_8
+#define AP_MOTORS_TILT_HEXA_QTY_MOTORS 6
+
+#define AP_MOTORS_TILT_1    AP_MOTORS_MOT_7
+#define AP_MOTORS_TILT_2    AP_MOTORS_MOT_8
+#define AP_MOTORS_TILT_3    AP_MOTORS_MOT_9
+#define AP_MOTORS_TILT_4    AP_MOTORS_MOT_10
+#define AP_MOTORS_TILT_5    AP_MOTORS_MOT_11
+#define AP_MOTORS_TILT_6    AP_MOTORS_MOT_12
 
 class AP_MotorsTiltHexa : public AP_MotorsMulticopter {
 public:
@@ -41,7 +46,6 @@ public:
 
     // output_to_motors - sends minimum values out to the motors
     virtual void        output_to_motors();
-    void				output_to_motor(int MotorIndex);
 
     // get_motor_mask - returns a bitmask of which outputs are being used for motors or servos (1 means being used)
     //  this can be used to ensure other pwm outputs (i.e. for servos) do not conflict
@@ -67,10 +71,13 @@ protected:
     float               _roll_factor[AP_MOTORS_MAX_NUM_MOTORS]; // each motors contribution to roll
     float               _pitch_factor[AP_MOTORS_MAX_NUM_MOTORS]; // each motors contribution to pitch
     //float               _yaw_factor[AP_MOTORS_MAX_NUM_MOTORS];  // each motors contribution to yaw (normally 1 or -1)
+    float				_forward_factor[AP_MOTORS_MAX_NUM_MOTORS];	//each tilt channels contribution to
+    																		//moving forward.
+    float				_lateral_factor[AP_MOTORS_MAX_NUM_MOTORS];		//each tilt channels contribution to
+																			//moving right.
 
     SRV_Channel		*_motor_servo[AP_MOTORS_MAX_NUM_MOTORS];
-    SRV_Channel     *_yaw_servo1; // yaw output channel
-    SRV_Channel     *_yaw_servo2; // yaw output channel
+    SRV_Channel     *_tilt_servo[AP_MOTORS_MAX_NUM_MOTORS];
     float           _pivot_angle;                       // Angle of yaw pivot
     /*
      * 1 - front
@@ -80,11 +87,13 @@ protected:
      * 5 - front left
      * 6 - rear right
      */
-    float			_thrust[AP_MOTORS_MAX_NUM_MOTORS];
+    float			_thrust[AP_MOTORS_MAX_NUM_MOTORS];	//0 to 1
+    float			_tilt[AP_MOTORS_MAX_NUM_MOTORS];	//-1 to 1
 
 private:
     void ConfigureMotorFactors(int MotorNumber, float angle_degrees);
-    float             ReverseThrustIfRequired(float Thrust, SRV_Channel *pServo);
+    float ReverseThrustIfRequired(float Thrust, SRV_Channel *pServo);
+    void ConfigureTiltFactors(int MotorNumber, float angle_degrees);
 };
 
 

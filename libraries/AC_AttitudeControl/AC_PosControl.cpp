@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <AP_HAL/AP_HAL.h>
 #include "AC_PosControl.h"
 #include <AP_Math/AP_Math.h>
@@ -52,6 +53,8 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _leash_up_z(POSCONTROL_LEASH_LENGTH_MIN),
     _roll_target(0.0f),
     _pitch_target(0.0f),
+	_forward_target(0.0f),
+	_lateral_target(0.0f),
     _distance_to_target(0.0f),
     _accel_target_jerk_limited(0.0f,0.0f),
     _accel_target_filter(POSCONTROL_ACCEL_FILTER_HZ)
@@ -74,6 +77,8 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _limit.vel_up = true;
     _limit.vel_down = true;
     _limit.accel_xy = true;
+    _paccel_mod = NULL;
+    _using_ultimate_dest = false;
 }
 
 ///
@@ -529,6 +534,7 @@ void AC_PosControl::set_speed_xy(float speed_cms)
 /// set_pos_target in cm from home
 void AC_PosControl::set_pos_target(const Vector3f& position)
 {
+	printf("set_pos_target\n");
     _pos_target = position;
 
     _flags.use_desvel_ff_z = false;
@@ -542,6 +548,7 @@ void AC_PosControl::set_pos_target(const Vector3f& position)
 /// set_xy_target in cm from home
 void AC_PosControl::set_xy_target(float x, float y)
 {
+	printf("set_xy_target\n");
     _pos_target.x = x;
     _pos_target.y = y;
 }
@@ -549,9 +556,13 @@ void AC_PosControl::set_xy_target(float x, float y)
 /// shift position target target in x, y axis
 void AC_PosControl::shift_pos_xy_target(float x_cm, float y_cm)
 {
+	printf("shift_pos_xy_target\n");
+
     // move pos controller target
     _pos_target.x += x_cm;
     _pos_target.y += y_cm;
+
+    clear_ultimate_dest();
 
     // disable feed forward
     if (!is_zero(x_cm) || !is_zero(y_cm)) {
@@ -566,6 +577,8 @@ void AC_PosControl::set_target_to_stopping_point_xy()
     calc_leash_length_xy();
 
     get_stopping_point_xy(_pos_target);
+    clear_ultimate_dest();
+    printf("set_target_to_stopping_point_xy\n");
 }
 
 /// get_stopping_point_xy - calculates stopping point based on current position, velocity, vehicle acceleration
@@ -658,6 +671,8 @@ void AC_PosControl::init_xy_controller(bool reset_I)
 /// update_xy_controller - run the horizontal position controller - should be called at 100hz or higher
 void AC_PosControl::update_xy_controller(xy_mode mode, float ekfNavVelGainScaler, bool use_althold_lean_angle)
 {
+	printf("update_xy_controller\n");
+
     // compute dt
     uint32_t now = AP_HAL::millis();
     float dt = (now - _last_update_xy_ms) / 1000.0f;
@@ -712,6 +727,7 @@ void AC_PosControl::init_vel_controller_xyz()
     // set target position
     const Vector3f& curr_pos = _inav.get_position();
     set_xy_target(curr_pos.x, curr_pos.y);
+    clear_ultimate_dest();
     set_alt_target(curr_pos.z);
 
     // move current vehicle velocity into feed forward velocity
@@ -729,6 +745,8 @@ void AC_PosControl::init_vel_controller_xyz()
 ///     throttle targets will be sent directly to the motors
 void AC_PosControl::update_vel_controller_xy(float ekfNavVelGainScaler)
 {
+	printf("update_vel_controller_xy\n");
+
     // capture time since last iteration
     uint32_t now = AP_HAL::millis();
     float dt = (now - _last_update_xy_ms)*0.001f;
@@ -813,6 +831,8 @@ void AC_PosControl::desired_vel_to_pos(float nav_dt)
         _pos_target.x += _vel_desired.x * nav_dt;
         _pos_target.y += _vel_desired.y * nav_dt;
     }
+    //clear_ultimate_dest();
+    printf("desired_vel_to_pos\n");
 }
 
 /// pos_to_rate_xy - horizontal position error to velocity controller
@@ -825,6 +845,16 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
     Vector3f curr_pos = _inav.get_position();
     float linear_distance;      // the distance we swap between linear and sqrt velocity response
     float kP = ekfNavVelGainScaler * _p_pos_xy.kP(); // scale gains to compensate for noisy optical flow measurement in the EKF
+    float accel_cms = _accel_cms;
+
+    //printf("Mode = %d\n", mode);
+
+    if (_paccel_mod != NULL)
+	{
+    	printf("Accel reduced from %f to ", accel_cms);
+    	accel_cms = _paccel_mod->Function(accel_cms);
+    	printf("%f\n", accel_cms);
+	}
 
     // avoid divide by zero
     if (kP <= 0.0f) {
@@ -837,27 +867,70 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
 
         // constrain target position to within reasonable distance of current location
         _distance_to_target = norm(_pos_error.x, _pos_error.y);
-        if (_distance_to_target > _leash && _distance_to_target > 0.0f) {
-            _pos_target.x = curr_pos.x + _leash * _pos_error.x/_distance_to_target;
-            _pos_target.y = curr_pos.y + _leash * _pos_error.y/_distance_to_target;
-            // re-calculate distance error
-            _pos_error.x = _pos_target.x - curr_pos.x;
-            _pos_error.y = _pos_target.y - curr_pos.y;
-            _distance_to_target = _leash;
+        float distance_to_target;
+        Vector3f pos_error;
+        if (_using_ultimate_dest)
+        {
+        	pos_error.x = _ultimate_dest.x - curr_pos.x;
+        	pos_error.y = _ultimate_dest.y - curr_pos.y;
+        	distance_to_target = norm(pos_error.x, pos_error.y);
+        	printf("Ultimate dest dist = %f\n", distance_to_target);
+        	if (distance_to_target < _distance_to_target)
+        	{
+        		distance_to_target = _distance_to_target;
+        		pos_error = _pos_error;
+        	}
         }
+        else
+        {
+        	distance_to_target = _distance_to_target;
+        	pos_error = _pos_error;
+        }
+        /*
+         * The leash is a maximum distance which the target is assumed to be from the
+         * current location.  It depends upon maximum speed and maximum acceleration.
+         */
+        /*
+         * Don't restrict distance if acceleration was altered.
+         */
+        float leash = calc_leash_length(_speed_cms, accel_cms, _p_pos_xy.kP());
+        //printf("leash = %f\n", leash);
+		if (_distance_to_target > leash && _distance_to_target > 0.0f) {
+			_pos_target.x = curr_pos.x + leash * _pos_error.x/_distance_to_target;
+			_pos_target.y = curr_pos.y + leash * _pos_error.y/_distance_to_target;
+			// re-calculate distance error
+			_pos_error.x = _pos_target.x - curr_pos.x;
+			_pos_error.y = _pos_target.y - curr_pos.y;
+			_distance_to_target = leash;
+		}
 
         // calculate the distance at which we swap between linear and sqrt velocity response
-        linear_distance = _accel_cms/(2.0f*kP*kP);
+        /*
+         * Why do we have 2 separate regimes of velocity response?  What is the significance
+         * of the transition point between these two regimes?
+         *
+         * I think it might be because the square root of x when x is less than 1 is greater than x.
+         * We don't want it to be going fast when it's nearly at it's target, just to slow down to
+         * zero bang-on it's target.  We want it to slow down a bit more before then.
+         *
+         * The transition point between the 2 regimes is chosen such that the term being square-rooted is 1.
+         *
+         * Reducing the acceleration (accel_cms) here to reflect the capabilities of the aircraft should work.
+         */
+        linear_distance = accel_cms/(2.0f*kP*kP);
 
         if (_distance_to_target > 2.0f*linear_distance) {
             // velocity response grows with the square root of the distance
-            float vel_sqrt = safe_sqrt(2.0f*_accel_cms*(_distance_to_target-linear_distance));
-            _vel_target.x = vel_sqrt * _pos_error.x/_distance_to_target;
-            _vel_target.y = vel_sqrt * _pos_error.y/_distance_to_target;
+        	// ...as per the relevant kinematic equation.
+            float vel_sqrt = safe_sqrt(2.0f*accel_cms*(distance_to_target-linear_distance));
+            _vel_target.x = vel_sqrt * pos_error.x/distance_to_target;
+            _vel_target.y = vel_sqrt * pos_error.y/distance_to_target;
+            printf("vel_sqrt = %f, dist = %f\n", vel_sqrt, distance_to_target);
         }else{
             // velocity response grows linearly with the distance
-            _vel_target.x = kP * _pos_error.x;
-            _vel_target.y = kP * _pos_error.y;
+            _vel_target.x = kP * pos_error.x;
+            _vel_target.y = kP * pos_error.y;
+            //printf("linear\n");
         }
 
         if (mode == XY_MODE_POS_LIMITED_AND_VEL_FF) {
@@ -867,12 +940,17 @@ void AC_PosControl::pos_to_rate_xy(xy_mode mode, float dt, float ekfNavVelGainSc
 
             // scale velocity within limit
             float vel_total = norm(_vel_target.x, _vel_target.y);
+            //If moving faster than 2m/s...
             if (vel_total > POSCONTROL_VEL_XY_MAX_FROM_POS_ERR) {
+            	//Move at 2m/s
                 _vel_target.x = POSCONTROL_VEL_XY_MAX_FROM_POS_ERR * _vel_target.x/vel_total;
                 _vel_target.y = POSCONTROL_VEL_XY_MAX_FROM_POS_ERR * _vel_target.y/vel_total;
             }
 
-            // add velocity feed-forward
+            // add velocity feed-forward.
+            /*
+             * This seems to be for flight modes in which the velocity needs to be controlled.
+             */
             _vel_target.x += _vel_desired.x;
             _vel_target.y += _vel_desired.y;
         } else {
@@ -1010,6 +1088,9 @@ void AC_PosControl::accel_to_lean_angles(float dt, float ekfNavVelGainScaler, bo
     _pitch_target = constrain_float(atanf(-accel_forward/(GRAVITY_MSS * 100))*(18000/M_PI),-lean_angle_max, lean_angle_max);
     float cos_pitch_target = cosf(_pitch_target*M_PI/18000);
     _roll_target = constrain_float(atanf(accel_right*cos_pitch_target/(GRAVITY_MSS * 100))*(18000/M_PI), -lean_angle_max, lean_angle_max);
+
+    _forward_target = constrain_float(atanf(accel_forward/(GRAVITY_MSS * 100)),-1, 1);
+    _lateral_target = constrain_float(atanf(accel_right/(GRAVITY_MSS * 100)),-1, 1);
 }
 
 // get_lean_angles_to_accel - convert roll, pitch lean angles to lat/lon frame accelerations in cm/s/s
@@ -1088,4 +1169,22 @@ void AC_PosControl::check_for_ekf_z_reset()
         shift_alt_target(-alt_shift * 100.0f);
         _ekf_z_reset_ms = reset_ms;
     }
+}
+
+void AC_PosControl::set_accel_mod(AP_Function<float> *pS)
+{
+	_paccel_mod = pS;
+}
+
+void AC_PosControl::set_ultimate_dest(Vector3f d)
+{
+	printf("set ultimate dest %f %f %f\n", d.x, d.y, d.z);
+	_ultimate_dest = d;
+	_using_ultimate_dest = true;
+}
+
+void AC_PosControl::clear_ultimate_dest(void)
+{
+	printf("clear ultimate dest\n");
+	_using_ultimate_dest = false;
 }

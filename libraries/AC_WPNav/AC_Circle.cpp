@@ -141,6 +141,7 @@ void AC_Circle::update()
             target.z = _pos_control.get_alt_target();
 
             // update position controller target
+            _pos_control.clear_ultimate_dest();
             _pos_control.set_xy_target(target.x, target.y);
 
             // heading is 180 deg from vehicles target position around circle

@@ -502,6 +502,8 @@ void Copter::one_hz_loop()
     // indicates that the sensor or subsystem is present but not
     // functioning correctly
     update_sensor_status_flags();
+
+    AP_EngineMon_Process();
 }
 
 // called at 50hz

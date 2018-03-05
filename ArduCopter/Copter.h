@@ -93,6 +93,8 @@
 #include <AP_Arming/AP_Arming.h>
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_SmartRTL/AP_SmartRTL.h>
+#include <AP_EngineMon/AP_EngineMon.h>
+#include <AP_UAVCAN/AP_UAVCAN.h>
 
 // Configuration
 #include "defines.h"
@@ -132,6 +134,8 @@
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 #include <SITL/SITL.h>
 #endif
+
+#include "level.h"
 
 
 class Copter : public AP_HAL::HAL::Callbacks {
@@ -188,11 +192,14 @@ private:
     RC_Channel *channel_pitch;
     RC_Channel *channel_throttle;
     RC_Channel *channel_yaw;
+    RC_Channel *channel_level;
 
     // Dataflash
     DataFlash_Class DataFlash;
 
     AP_GPS gps = AP_GPS::create();
+
+    AP_UAVCAN *pUAVCAN;
 
     // flight modes convenience array
     AP_Int8 *flight_modes;
@@ -517,6 +524,9 @@ private:
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;
     AC_Circle *circle_nav;
+
+    Level level;
+    LevelModifyAcceleration LMA;
 
     // Performance monitoring
     int16_t pmTest1;
@@ -1156,6 +1166,7 @@ private:
     void init_capabilities(void);
     void dataflash_periodic(void);
     void accel_cal_update(void);
+    float get_vel_target_scale(void);
 
 public:
     void mavlink_delay_cb();

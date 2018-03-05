@@ -29,7 +29,21 @@
 #define GOBJECTN(v, pname, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## pname, (const void *)&copter.v, {group_info : class::var_info} }
 
 const AP_Param::Info Copter::var_info[] = {
-    // @Param: SYSID_SW_MREV
+	// @Param: SUPRT_KEY_LOW
+	// @DisplayName: Support key low.
+	// @Description: The low part of the manufacturer support key.
+	// @User: Advanced
+	// @ReadOnly: True
+	GSCALAR(support_key_low, "SUPRT_KEY_LOW",   0),
+
+	// @Param: SUPRT_KEY_HIGH
+	// @DisplayName: Support key high.
+	// @Description: The high part of the manufacturer support key.
+	// @User: Advanced
+	// @ReadOnly: True
+	GSCALAR(support_key_high, "SUPRT_KEY_HIGH",   0),
+
+	// @Param: SYSID_SW_MREV
     // @DisplayName: Eeprom format version number
     // @Description: This value is incremented when changes are made to the eeprom format
     // @User: Advanced
@@ -556,6 +570,13 @@ const AP_Param::Info Copter::var_info[] = {
     // @Range: -0.5 1.0
     // @User: Advanced
     GSCALAR(acro_rp_expo,  "ACRO_RP_EXPO",    ACRO_RP_EXPO_DEFAULT),
+
+	// @Param: LEVEL_ACCEL
+	// @DisplayName: My New Parameter
+	// @Description: A description of my new parameter goes here
+	// @Range: 1 500
+	// @User: Standard
+	GSCALAR(level_accel, "LEVEL_ACCEL", 1),
 
     // @Param: VEL_XY_P
     // @DisplayName: Velocity (horizontal) P gain
@@ -1086,8 +1107,15 @@ void Copter::load_parameters(void)
     AP_Param::convert_old_parameters(&conversion_table[0], ARRAY_SIZE(conversion_table));
     hal.console->printf("load_all took %uus\n", (unsigned)(micros() - before));
 
-    // setup AP_Param frame type flags
-    AP_Param::set_frame_type_flags(AP_PARAM_FRAME_COPTER);
+	// setup AP_Param frame type flags
+    if ((AP_Motors::motor_frame_class)g2.frame_class.get() == AP_Motors::MOTOR_FRAME_TILTHEXA)
+    {
+    	AP_Param::set_frame_type_flags(AP_PARAM_FRAME_TILTHEXA);
+    }
+    else
+    {
+		AP_Param::set_frame_type_flags(AP_PARAM_FRAME_COPTER);
+    }
     
 }
 

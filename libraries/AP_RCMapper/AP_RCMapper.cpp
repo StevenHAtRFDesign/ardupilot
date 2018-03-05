@@ -56,6 +56,9 @@ const AP_Param::GroupInfo RCMapper::var_info[] = {
     // @RebootRequired: True
     AP_GROUPINFO_FRAME("LATERAL",    5, RCMapper, _ch_lateral, 7, AP_PARAM_FRAME_SUB),
 
+	//Name, idx, clazz, element, def, frame_flags
+	AP_GROUPINFO_FRAME("LEVEL",    7, RCMapper, _ch_level, 7, AP_PARAM_FRAME_TILTHEXA),
+
     AP_GROUPEND
 };
 

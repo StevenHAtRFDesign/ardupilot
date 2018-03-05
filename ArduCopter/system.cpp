@@ -600,9 +600,12 @@ void Copter::allocate_motors(void)
     pos_control = new AC_PosControl(*ahrs_view, inertial_nav, *motors, *attitude_control,
                                     g.p_alt_hold, g.p_vel_z, g.pid_accel_z,
                                     g.p_pos_xy, g.pi_vel_xy);
+
     if (pos_control == nullptr) {
         AP_HAL::panic("Unable to allocate PosControl");
     }
+    LMA.SetLevel(&level);
+    pos_control->set_accel_mod(&LMA);
     AP_Param::load_object_from_eeprom(pos_control, pos_control->var_info);
 
     wp_nav = new AC_WPNav(inertial_nav, *ahrs_view, *pos_control, *attitude_control);
