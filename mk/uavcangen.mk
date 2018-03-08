@@ -19,3 +19,4 @@ $(UAVCAN_HEADERS): $(UAVCAN_DSDL_MESSAGE_DEFINITIONS)
 #	PYTHONPATH=$(UAVCAN_DIR)libuavcan/dsdl_compiler/ python $(UAVCAN_DIR)libuavcan/dsdl_compiler/setup.py install
 
 	PYTHONPATH=$(UAVCAN_DIRECTORY)/libuavcan/ python $(UAVCAN_DIRECTORY)/libuavcan/dsdl_compiler/libuavcan_dsdlc "$(UAVCAN_DIRECTORY)/dsdl/uavcan" -O"$(UAVCAN_GEN_INC)"
+	PYTHONPATH=$(UAVCAN_DIRECTORY)/libuavcan/ python $(UAVCAN_DIRECTORY)/libuavcan/dsdl_compiler/libuavcan_dsdlc "$(UAVCAN_DIRECTORY)/dsdl/rfd" -O"$(UAVCAN_GEN_INC)"
